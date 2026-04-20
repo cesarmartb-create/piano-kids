@@ -11,10 +11,10 @@ body { font-family: -apple-system, sans-serif; background: #f5f4f0; min-height: 
 h1 { font-size: 22px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
 h1 span { color: #534AB7; }
 .subtitle { font-size: 13px; color: #888; margin-bottom: 16px; }
-.song-selector { display: -webkit-flex; display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.song-selector { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
 .song-btn { padding: 7px 16px; border-radius: 20px; border: 1px solid #ccc; font-size: 13px; cursor: pointer; background: white; color: #555; -webkit-appearance: none; }
 .song-btn.active { background: #EEEDFE; border-color: #534AB7; color: #3C3489; font-weight: 600; }
-.info-bar { display: -webkit-flex; display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.info-bar { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
 .info-card { flex: 1; min-width: 100px; background: white; border-radius: 10px; border: 1px solid #e5e5e5; padding: 8px 12px; }
 .info-label { font-size: 11px; color: #aaa; margin-bottom: 2px; }
 .info-val { font-size: 15px; font-weight: 600; color: #1a1a1a; }
@@ -22,56 +22,78 @@ h1 span { color: #534AB7; }
 .section-title { font-size: 12px; color: #aaa; margin-bottom: 10px; }
 .staff-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 svg.staff { display: block; min-width: 600px; height: 110px; }
-.controls { display: -webkit-flex; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
-button { padding: 9px 16px; border-radius: 9px; border: 1px solid #ddd; font-size: 14px; cursor: pointer; background: white; color: #333; -webkit-appearance: none; }
-button.primary { background: #534AB7; border-color: #534AB7; color: white; font-weight: 600; }
-button.speed { padding: 6px 12px; font-size: 12px; }
-button.speed.active { background: #E1F5EE; border-color: #0F6E56; color: #085041; font-weight: 600; }
+.speed-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.speed-label { font-size: 13px; color: #555; font-weight: 600; }
+.speed-btn { padding: 8px 18px; border-radius: 20px; border: 1px solid #ccc; font-size: 13px; cursor: pointer; background: white; color: #555; -webkit-appearance: none; }
+.speed-btn.active { background: #EEEDFE; border-color: #534AB7; color: #3C3489; font-weight: 600; }
+.main-controls { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.btn-play { padding: 14px 32px; border-radius: 12px; border: none; font-size: 18px; font-weight: 700; cursor: pointer; background: #534AB7; color: white; flex: 1; min-width: 140px; -webkit-appearance: none; }
+.btn-play.paused { background: #0F6E56; }
+.btn-play.finished { background: #aaa; }
+.btn-secondary { padding: 14px 20px; border-radius: 12px; border: 1px solid #ddd; font-size: 15px; cursor: pointer; background: white; color: #333; -webkit-appearance: none; }
+.btn-manual { padding: 10px 16px; border-radius: 9px; border: 1px solid #ddd; font-size: 13px; cursor: pointer; background: white; color: #666; -webkit-appearance: none; }
+.btn-manual:active { background: #f0f0f0; }
 .piano-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-.piano-outer { position: relative; height: 140px; display: -webkit-flex; display: flex; min-width: 500px; }
-.white-key { -webkit-flex: 1; flex: 1; background: white; border: 1px solid #ccc; border-radius: 0 0 6px 6px; display: -webkit-flex; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; cursor: pointer; position: relative; }
+.piano-outer { position: relative; height: 140px; display: flex; min-width: 500px; }
+.white-key { flex: 1; background: white; border: 1px solid #ccc; border-radius: 0 0 6px 6px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; cursor: pointer; position: relative; }
 .white-key.highlight { background: #9FE1CB; border-color: #0F6E56; }
+.white-key.flash { background: #534AB7; border-color: #3C3489; }
 .key-label { font-size: 11px; color: #aaa; font-weight: 500; pointer-events: none; }
 .white-key.highlight .key-label { color: #085041; font-weight: 700; }
-.black-keys { position: absolute; top: 0; left: 0; width: 100%; height: 85px; pointer-events: none; display: -webkit-flex; display: flex; }
-.bslot { -webkit-flex: 1; flex: 1; position: relative; }
+.white-key.flash .key-label { color: white; font-weight: 700; }
+.black-keys { position: absolute; top: 0; left: 0; width: 100%; height: 85px; pointer-events: none; display: flex; }
+.bslot { flex: 1; position: relative; }
 .black-key { position: absolute; right: -32%; width: 64%; height: 100%; background: #222; border-radius: 0 0 4px 4px; z-index: 2; }
-.note-box { margin-top: 12px; background: #EEEDFE; border: 1px solid #AFA9EC; border-radius: 10px; padding: 12px 16px; display: -webkit-flex; display: flex; align-items: center; gap: 14px; }
-.note-big { font-size: 28px; font-weight: 700; color: #3C3489; min-width: 40px; }
+.note-box { margin-top: 12px; background: #EEEDFE; border: 1px solid #AFA9EC; border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 14px; }
+.note-big { font-size: 28px; font-weight: 700; color: #3C3489; min-width: 50px; }
 .note-hint { font-size: 13px; color: #555; line-height: 1.5; }
-.progress-bar { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; margin-bottom: 14px; }
-.progress-fill { height: 100%; background: #534AB7; border-radius: 3px; }
+.progress-bar { height: 8px; background: #eee; border-radius: 4px; overflow: hidden; margin-bottom: 14px; }
+.progress-fill { height: 100%; background: #534AB7; border-radius: 4px; transition: width 0.2s; }
+.finished-msg { text-align: center; padding: 16px; font-size: 20px; font-weight: 700; color: #534AB7; display: none; }
 </style>
 </head>
 <body>
 <div class="app">
 <h1>Piano<span>Kids</span> 🎹</h1>
 <p class="subtitle">Aprende a leer partituras y a tocar el piano</p>
+
 <div class="song-selector" id="songSelector"></div>
 <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+
 <div class="info-bar">
 <div class="info-card"><div class="info-label">Canción</div><div class="info-val" id="infoSong">—</div></div>
 <div class="info-card"><div class="info-label">Nota actual</div><div class="info-val" id="infoNote" style="color:#534AB7">—</div></div>
 <div class="info-card"><div class="info-label">Progreso</div><div class="info-val" id="infoProgress">—</div></div>
 <div class="info-card"><div class="info-label">Dificultad</div><div class="info-val" id="infoDiff">—</div></div>
 </div>
+
 <div class="section">
 <div class="section-title">Partitura — la nota morada es la que debes tocar ahora</div>
 <div class="staff-container">
 <svg class="staff" id="staffSvg" viewBox="0 0 720 110" xmlns="http://www.w3.org/2000/svg"></svg>
 </div>
 </div>
-<div class="controls">
-<button onclick="prevNote()">⬅ Anterior</button>
-<button class="primary" onclick="nextNote()">Siguiente ➡</button>
-<button onclick="resetSong()">⏮ Reiniciar</button>
-<div style="margin-left:auto;display:-webkit-flex;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-<span style="font-size:12px;color:#888">Auto:</span>
-<button class="speed" id="spOff" onclick="setSpeed(0)">Manual</button>
-<button class="speed" id="spSlow" onclick="setSpeed(2000)">Lento</button>
-<button class="speed" id="spNorm" onclick="setSpeed(1000)">Normal</button>
+
+<div class="speed-bar">
+<span class="speed-label">Velocidad:</span>
+<button class="speed-btn" id="sp1" onclick="selectSpeed(3000)">Muy lento</button>
+<button class="speed-btn active" id="sp2" onclick="selectSpeed(2000)">Lento</button>
+<button class="speed-btn" id="sp3" onclick="selectSpeed(1200)">Normal</button>
+<button class="speed-btn" id="sp4" onclick="selectSpeed(700)">Rápido</button>
 </div>
+
+<div class="main-controls">
+<button class="btn-play" id="btnPlay" onclick="togglePlay()">▶ Iniciar</button>
+<button class="btn-secondary" onclick="resetSong()">⏮ Reiniciar</button>
 </div>
+
+<div style="display:flex;gap:8px;margin-bottom:14px;">
+<button class="btn-manual" onclick="prevNote()">⬅ Nota anterior</button>
+<button class="btn-manual" onclick="nextNoteManual()">Nota siguiente ➡</button>
+</div>
+
+<div class="finished-msg" id="finishedMsg">🎉 ¡Bravo! Terminaste la canción</div>
+
 <div class="section">
 <div class="section-title">Teclado — la tecla verde es la que debes tocar en tu piano</div>
 <div class="piano-scroll">
@@ -81,10 +103,11 @@ button.speed.active { background: #E1F5EE; border-color: #0F6E56; color: #085041
 </div>
 <div class="note-box">
 <div class="note-big" id="noteBig">—</div>
-<div class="note-hint" id="noteHint">Selecciona una canción para comenzar</div>
+<div class="note-hint" id="noteHint">Elige una canción y presiona Iniciar</div>
 </div>
 </div>
 </div>
+
 <script>
 var SONGS=[
 {name:"Oda a la Alegría",difficulty:"Básico",notes:[
@@ -120,10 +143,62 @@ var SONGS=[
 {note:"Mi",pos:4,label:"Mi"},{note:"Si",pos:1,label:"Si"},
 {note:"Re",pos:5,label:"Re"},{note:"Do",pos:6,label:"Do"},
 {note:"La",pos:1,label:"La"}
+]},
+{name:"El Danubio Azul",difficulty:"Intermedio",notes:[
+{note:"Re",pos:5,label:"Re"},{note:"La",pos:1,label:"La"},
+{note:"Fa",pos:3,label:"Fa"},{note:"Re",pos:5,label:"Re"},
+{note:"Fa",pos:3,label:"Fa"},{note:"La",pos:1,label:"La"},
+{note:"Re",pos:5,label:"Re"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Sol",pos:2,label:"Sol"},{note:"Do",pos:6,label:"Do"},
+{note:"Mi",pos:4,label:"Mi"},{note:"Sol",pos:2,label:"Sol"}
+]},
+{name:"Minuet Bach",difficulty:"Intermedio",notes:[
+{note:"Re",pos:5,label:"Re"},{note:"Sol",pos:2,label:"Sol"},
+{note:"La",pos:1,label:"La"},{note:"Si",pos:1,label:"Si"},
+{note:"Do",pos:6,label:"Do"},{note:"Re",pos:5,label:"Re"},
+{note:"Sol",pos:2,label:"Sol"},{note:"Sol",pos:2,label:"Sol"},
+{note:"Mi",pos:4,label:"Mi"},{note:"Do",pos:6,label:"Do"},
+{note:"Re",pos:5,label:"Re"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Fa",pos:3,label:"Fa"},{note:"Sol",pos:2,label:"Sol"}
 ]}
 ];
+
 var NOTE_TO_WHITE={"Do":0,"Re":1,"Mi":2,"Fa":3,"Sol":4,"La":5,"Si":6};
-var currentSong=null,currentIdx=0,autoTimer=null;
+var NOTE_FREQ={"Do":261.63,"Re":293.66,"Mi":329.63,"Fa":349.23,"Sol":392.00,"La":440.00,"Si":493.88,"Re#":311.13};
+var currentSong=null,currentIdx=0,autoTimer=null,isPlaying=false,selectedSpeed=2000;
+var audioCtx=null;
+
+function getAudioCtx(){
+if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+return audioCtx;
+}
+
+function playNote(noteName){
+try {
+var ctx=getAudioCtx();
+var freq=NOTE_FREQ[noteName]||440;
+var osc=ctx.createOscillator();
+var gain=ctx.createGain();
+osc.connect(gain);
+gain.connect(ctx.destination);
+osc.type="triangle";
+osc.frequency.setValueAtTime(freq,ctx.currentTime);
+gain.gain.setValueAtTime(0.4,ctx.currentTime);
+gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.8);
+osc.start(ctx.currentTime);
+osc.stop(ctx.currentTime+0.8);
+} catch(e){}
+}
+
+function flashKey(note){
+var idx=NOTE_TO_WHITE[note];
+if(idx===undefined) return;
+var k=document.getElementById("wk_"+idx);
+if(!k) return;
+k.classList.add("flash");
+setTimeout(function(){k.classList.remove("flash");},300);
+}
+
 function init(){
 var sel=document.getElementById("songSelector");
 SONGS.forEach(function(s,i){
@@ -136,36 +211,115 @@ sel.appendChild(btn);
 buildPiano();
 loadSong(0);
 }
+
 function buildPiano(){
 var outer=document.getElementById("pianoOuter");
 var bk=document.getElementById("blackKeys");
-var whites=["Do","Re","Mi","Fa","Sol","La","Si","Do"];
-whites.forEach(function(n,i){
+["Do","Re","Mi","Fa","Sol","La","Si","Do"].forEach(function(n,i){
 var k=document.createElement("div");
-k.className="white-key";
-k.id="wk_"+i;
+k.className="white-key";k.id="wk_"+i;
 k.innerHTML='<span class="key-label">'+n+'</span>';
 outer.insertBefore(k,bk);
 });
-var pattern=[1,1,0,1,1,1,0,0];
-pattern.forEach(function(has){
-var s=document.createElement("div");
-s.className="bslot";
+[1,1,0,1,1,1,0,0].forEach(function(has){
+var s=document.createElement("div");s.className="bslot";
 if(has) s.innerHTML='<div class="black-key"></div>';
 bk.appendChild(s);
 });
 }
+
 function loadSong(idx){
-document.querySelectorAll(".song-btn").forEach(function(b,i){
-b.classList.toggle("active",i===idx);
-});
-currentSong=SONGS[idx];
-currentIdx=0;
-clearAuto();
+document.querySelectorAll(".song-btn").forEach(function(b,i){b.classList.toggle("active",i===idx);});
+currentSong=SONGS[idx];currentIdx=0;
+stopPlay();
 document.getElementById("infoSong").textContent=currentSong.name;
 document.getElementById("infoDiff").textContent=currentSong.difficulty;
+document.getElementById("finishedMsg").style.display="none";
+document.getElementById("btnPlay").textContent="▶ Iniciar";
+document.getElementById("btnPlay").className="btn-play";
 renderState();
 }
+
+function selectSpeed(ms){
+selectedSpeed=ms;
+document.getElementById("sp1").classList.toggle("active",ms===3000);
+document.getElementById("sp2").classList.toggle("active",ms===2000);
+document.getElementById("sp3").classList.toggle("active",ms===1200);
+document.getElementById("sp4").classList.toggle("active",ms===700);
+if(isPlaying){ stopPlay(); startPlay(); }
+}
+
+function togglePlay(){
+if(isPlaying){ pausePlay(); }
+else {
+if(currentIdx>=currentSong.notes.length-1) resetSong();
+startPlay();
+}
+}
+
+function startPlay(){
+isPlaying=true;
+document.getElementById("btnPlay").textContent="⏸ Pausar";
+document.getElementById("btnPlay").className="btn-play paused";
+playCurrentAndSchedule();
+}
+
+function playCurrentAndSchedule(){
+if(!isPlaying) return;
+renderState();
+playNote(currentSong.notes[currentIdx].note);
+flashKey(currentSong.notes[currentIdx].note);
+if(currentIdx>=currentSong.notes.length-1){
+finishSong();return;
+}
+autoTimer=setTimeout(function(){
+if(!isPlaying) return;
+currentIdx++;
+playCurrentAndSchedule();
+},selectedSpeed);
+}
+
+function pausePlay(){
+isPlaying=false;
+if(autoTimer){clearTimeout(autoTimer);autoTimer=null;}
+document.getElementById("btnPlay").textContent="▶ Continuar";
+document.getElementById("btnPlay").className="btn-play";
+}
+
+function stopPlay(){
+isPlaying=false;
+if(autoTimer){clearTimeout(autoTimer);autoTimer=null;}
+}
+
+function finishSong(){
+isPlaying=false;
+document.getElementById("btnPlay").textContent="✓ Terminada";
+document.getElementById("btnPlay").className="btn-play finished";
+document.getElementById("finishedMsg").style.display="block";
+}
+
+function resetSong(){
+stopPlay();
+currentIdx=0;
+document.getElementById("finishedMsg").style.display="none";
+document.getElementById("btnPlay").textContent="▶ Iniciar";
+document.getElementById("btnPlay").className="btn-play";
+renderState();
+}
+
+function nextNoteManual(){
+if(!currentSong) return;
+if(currentIdx<currentSong.notes.length-1){
+currentIdx++;
+renderState();
+playNote(currentSong.notes[currentIdx].note);
+}
+}
+
+function prevNote(){
+if(currentIdx>0){currentIdx--;renderState();playNote(currentSong.notes[currentIdx].note);}
+}
+
 function renderState(){
 if(!currentSong) return;
 var n=currentSong.notes[currentIdx];
@@ -179,12 +333,12 @@ document.getElementById("noteHint").textContent="Toca esta tecla en tu piano"+(p
 drawStaff(currentSong.notes,currentIdx);
 highlightPiano(n);
 }
+
 function drawStaff(notes,activeIdx){
 var svg=document.getElementById("staffSvg");
 while(svg.firstChild) svg.removeChild(svg.firstChild);
 var ns="http://www.w3.org/2000/svg";
-var lineY=[18,31,44,57,70];
-lineY.forEach(function(y){
+[18,31,44,57,70].forEach(function(y){
 var l=document.createElementNS(ns,"line");
 l.setAttribute("x1","40");l.setAttribute("x2","710");
 l.setAttribute("y1",y);l.setAttribute("y2",y);
@@ -195,8 +349,7 @@ var clef=document.createElementNS(ns,"text");
 clef.setAttribute("x","44");clef.setAttribute("y","60");
 clef.setAttribute("font-size","52");clef.setAttribute("fill","#999");
 clef.setAttribute("font-family","Georgia,serif");
-clef.textContent="𝄞";
-svg.appendChild(clef);
+clef.textContent="𝄞";svg.appendChild(clef);
 var bar=document.createElementNS(ns,"line");
 bar.setAttribute("x1","95");bar.setAttribute("x2","95");
 bar.setAttribute("y1","18");bar.setAttribute("y2","70");
@@ -206,9 +359,7 @@ var startX=115,spacing=44;
 var noteY={1:18,2:25,3:31,4:38,5:44,6:51,7:57};
 notes.forEach(function(n,i){
 if(i>=14) return;
-var x=startX+i*spacing;
-var y=noteY[n.pos]||44;
-var isActive=(i===activeIdx);
+var x=startX+i*spacing,y=noteY[n.pos]||44,isActive=(i===activeIdx);
 if(isActive){
 var r=document.createElementNS(ns,"rect");
 r.setAttribute("x",x-15);r.setAttribute("y","8");
@@ -233,34 +384,16 @@ lb.setAttribute("font-size","10");
 lb.setAttribute("fill",isActive?"#3C3489":"#bbb");
 lb.setAttribute("font-weight",isActive?"bold":"normal");
 lb.setAttribute("font-family","-apple-system,sans-serif");
-lb.textContent=n.label;
-svg.appendChild(lb);
+lb.textContent=n.label;svg.appendChild(lb);
 });
 }
+
 function highlightPiano(note){
 document.querySelectorAll(".white-key").forEach(function(k){k.classList.remove("highlight");});
 var idx=NOTE_TO_WHITE[note.note];
-if(idx!==undefined){
-var k=document.getElementById("wk_"+idx);
-if(k) k.classList.add("highlight");
+if(idx!==undefined){var k=document.getElementById("wk_"+idx);if(k)k.classList.add("highlight");}
 }
-}
-function nextNote(){if(!currentSong) return;if(currentIdx<currentSong.notes.length-1){currentIdx++;renderState();}}
-function prevNote(){if(currentIdx>0){currentIdx--;renderState();}}
-function resetSong(){currentIdx=0;clearAuto();setSpeedUI(0);if(currentSong) renderState();}
-function setSpeed(ms){
-clearAuto();setSpeedUI(ms);
-if(ms>0) autoTimer=setInterval(function(){
-if(currentIdx>=currentSong.notes.length-1){clearAuto();return;}
-nextNote();
-},ms);
-}
-function clearAuto(){if(autoTimer){clearInterval(autoTimer);autoTimer=null;}}
-function setSpeedUI(ms){
-document.getElementById("spOff").classList.toggle("active",ms===0);
-document.getElementById("spSlow").classList.toggle("active",ms===2000);
-document.getElementById("spNorm").classList.toggle("active",ms===1000);
-}
+
 window.onload=function(){init();};
 </script>
 </body>
