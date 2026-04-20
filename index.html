@@ -32,7 +32,6 @@ svg.staff { display: block; min-width: 600px; height: 110px; }
 .btn-play.finished { background: #aaa; }
 .btn-secondary { padding: 14px 20px; border-radius: 12px; border: 1px solid #ddd; font-size: 15px; cursor: pointer; background: white; color: #333; -webkit-appearance: none; }
 .btn-manual { padding: 10px 16px; border-radius: 9px; border: 1px solid #ddd; font-size: 13px; cursor: pointer; background: white; color: #666; -webkit-appearance: none; }
-.btn-manual:active { background: #f0f0f0; }
 .piano-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .piano-outer { position: relative; height: 140px; display: flex; min-width: 500px; }
 .white-key { flex: 1; background: white; border: 1px solid #ccc; border-radius: 0 0 6px 6px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; cursor: pointer; position: relative; }
@@ -56,24 +55,20 @@ svg.staff { display: block; min-width: 600px; height: 110px; }
 <div class="app">
 <h1>Piano<span>Kids</span> 🎹</h1>
 <p class="subtitle">Aprende a leer partituras y a tocar el piano</p>
-
 <div class="song-selector" id="songSelector"></div>
 <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
-
 <div class="info-bar">
 <div class="info-card"><div class="info-label">Canción</div><div class="info-val" id="infoSong">—</div></div>
 <div class="info-card"><div class="info-label">Nota actual</div><div class="info-val" id="infoNote" style="color:#534AB7">—</div></div>
 <div class="info-card"><div class="info-label">Progreso</div><div class="info-val" id="infoProgress">—</div></div>
 <div class="info-card"><div class="info-label">Dificultad</div><div class="info-val" id="infoDiff">—</div></div>
 </div>
-
 <div class="section">
 <div class="section-title">Partitura — la nota morada es la que debes tocar ahora</div>
 <div class="staff-container">
 <svg class="staff" id="staffSvg" viewBox="0 0 720 110" xmlns="http://www.w3.org/2000/svg"></svg>
 </div>
 </div>
-
 <div class="speed-bar">
 <span class="speed-label">Velocidad:</span>
 <button class="speed-btn" id="sp1" onclick="selectSpeed(3000)">Muy lento</button>
@@ -81,19 +76,15 @@ svg.staff { display: block; min-width: 600px; height: 110px; }
 <button class="speed-btn" id="sp3" onclick="selectSpeed(1200)">Normal</button>
 <button class="speed-btn" id="sp4" onclick="selectSpeed(700)">Rápido</button>
 </div>
-
 <div class="main-controls">
 <button class="btn-play" id="btnPlay" onclick="togglePlay()">▶ Iniciar</button>
 <button class="btn-secondary" onclick="resetSong()">⏮ Reiniciar</button>
 </div>
-
 <div style="display:flex;gap:8px;margin-bottom:14px;">
-<button class="btn-manual" onclick="prevNote()">⬅ Nota anterior</button>
-<button class="btn-manual" onclick="nextNoteManual()">Nota siguiente ➡</button>
+<button class="btn-manual" onclick="prevNote()">⬅ Anterior</button>
+<button class="btn-manual" onclick="nextNoteManual()">Siguiente ➡</button>
 </div>
-
 <div class="finished-msg" id="finishedMsg">🎉 ¡Bravo! Terminaste la canción</div>
-
 <div class="section">
 <div class="section-title">Teclado — la tecla verde es la que debes tocar en tu piano</div>
 <div class="piano-scroll">
@@ -107,64 +98,102 @@ svg.staff { display: block; min-width: 600px; height: 110px; }
 </div>
 </div>
 </div>
-
 <script>
 var SONGS=[
 {name:"Oda a la Alegría",difficulty:"Básico",notes:[
-{note:"Mi",pos:4,label:"Mi"},{note:"Mi",pos:4,label:"Mi"},
-{note:"Fa",pos:3,label:"Fa"},{note:"Sol",pos:2,label:"Sol"},
-{note:"Sol",pos:2,label:"Sol"},{note:"Fa",pos:3,label:"Fa"},
-{note:"Mi",pos:4,label:"Mi"},{note:"Re",pos:5,label:"Re"},
-{note:"Do",pos:6,label:"Do"},{note:"Do",pos:6,label:"Do"},
-{note:"Re",pos:5,label:"Re"},{note:"Mi",pos:4,label:"Mi"},
-{note:"Mi",pos:4,label:"Mi"},{note:"Re",pos:5,label:"Re"},
-{note:"Re",pos:5,label:"Re"}
+{note:"Mi",pos:4,label:"Mi"},{note:"Mi",pos:4,label:"Mi"},{note:"Fa",pos:3,label:"Fa"},{note:"Sol",pos:2,label:"Sol"},
+{note:"Sol",pos:2,label:"Sol"},{note:"Fa",pos:3,label:"Fa"},{note:"Mi",pos:4,label:"Mi"},{note:"Re",pos:5,label:"Re"},
+{note:"Do",pos:6,label:"Do"},{note:"Do",pos:6,label:"Do"},{note:"Re",pos:5,label:"Re"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Mi",pos:4,label:"Mi"},{note:"Re",pos:5,label:"Re"},{note:"Re",pos:5,label:"Re"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Mi",pos:4,label:"Mi"},{note:"Fa",pos:3,label:"Fa"},{note:"Sol",pos:2,label:"Sol"},{note:"Sol",pos:2,label:"Sol"},
+{note:"Fa",pos:3,label:"Fa"},{note:"Mi",pos:4,label:"Mi"},{note:"Re",pos:5,label:"Re"},{note:"Do",pos:6,label:"Do"},
+{note:"Do",pos:6,label:"Do"},{note:"Re",pos:5,label:"Re"},{note:"Mi",pos:4,label:"Mi"},{note:"Re",pos:5,label:"Re"},
+{note:"Do",pos:6,label:"Do"},{note:"Do",pos:6,label:"Do"}
 ]},
 {name:"Cumpleaños Feliz",difficulty:"Básico",notes:[
-{note:"Do",pos:6,label:"Do"},{note:"Do",pos:6,label:"Do"},
-{note:"Re",pos:5,label:"Re"},{note:"Do",pos:6,label:"Do"},
-{note:"Fa",pos:3,label:"Fa"},{note:"Mi",pos:4,label:"Mi"},
-{note:"Do",pos:6,label:"Do"},{note:"Do",pos:6,label:"Do"},
-{note:"Re",pos:5,label:"Re"},{note:"Do",pos:6,label:"Do"},
-{note:"Sol",pos:2,label:"Sol"},{note:"Fa",pos:3,label:"Fa"}
+{note:"Do",pos:6,label:"Do"},{note:"Do",pos:6,label:"Do"},{note:"Re",pos:5,label:"Re"},{note:"Do",pos:6,label:"Do"},
+{note:"Fa",pos:3,label:"Fa"},{note:"Mi",pos:4,label:"Mi"},{note:"Do",pos:6,label:"Do"},{note:"Do",pos:6,label:"Do"},
+{note:"Re",pos:5,label:"Re"},{note:"Do",pos:6,label:"Do"},{note:"Sol",pos:2,label:"Sol"},{note:"Fa",pos:3,label:"Fa"},
+{note:"Do",pos:6,label:"Do"},{note:"Do",pos:6,label:"Do"},{note:"Do",pos:6,label:"Do"},{note:"La",pos:1,label:"La"},
+{note:"Fa",pos:3,label:"Fa"},{note:"Mi",pos:4,label:"Mi"},{note:"Re",pos:5,label:"Re"},{note:"Si",pos:1,label:"Si"},
+{note:"Si",pos:1,label:"Si"},{note:"La",pos:1,label:"La"},{note:"Fa",pos:3,label:"Fa"},{note:"Sol",pos:2,label:"Sol"},
+{note:"Fa",pos:3,label:"Fa"}
 ]},
 {name:"Twinkle Twinkle",difficulty:"Básico",notes:[
-{note:"Do",pos:6,label:"Do"},{note:"Do",pos:6,label:"Do"},
-{note:"Sol",pos:2,label:"Sol"},{note:"Sol",pos:2,label:"Sol"},
-{note:"La",pos:1,label:"La"},{note:"La",pos:1,label:"La"},
-{note:"Sol",pos:2,label:"Sol"},{note:"Fa",pos:3,label:"Fa"},
-{note:"Fa",pos:3,label:"Fa"},{note:"Mi",pos:4,label:"Mi"},
-{note:"Mi",pos:4,label:"Mi"},{note:"Re",pos:5,label:"Re"},
+{note:"Do",pos:6,label:"Do"},{note:"Do",pos:6,label:"Do"},{note:"Sol",pos:2,label:"Sol"},{note:"Sol",pos:2,label:"Sol"},
+{note:"La",pos:1,label:"La"},{note:"La",pos:1,label:"La"},{note:"Sol",pos:2,label:"Sol"},{note:"Fa",pos:3,label:"Fa"},
+{note:"Fa",pos:3,label:"Fa"},{note:"Mi",pos:4,label:"Mi"},{note:"Mi",pos:4,label:"Mi"},{note:"Re",pos:5,label:"Re"},
+{note:"Re",pos:5,label:"Re"},{note:"Do",pos:6,label:"Do"},{note:"Sol",pos:2,label:"Sol"},{note:"Sol",pos:2,label:"Sol"},
+{note:"Fa",pos:3,label:"Fa"},{note:"Fa",pos:3,label:"Fa"},{note:"Mi",pos:4,label:"Mi"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Re",pos:5,label:"Re"},{note:"Sol",pos:2,label:"Sol"},{note:"Sol",pos:2,label:"Sol"},{note:"Fa",pos:3,label:"Fa"},
+{note:"Fa",pos:3,label:"Fa"},{note:"Mi",pos:4,label:"Mi"},{note:"Mi",pos:4,label:"Mi"},{note:"Re",pos:5,label:"Re"},
+{note:"Do",pos:6,label:"Do"},{note:"Do",pos:6,label:"Do"},{note:"Sol",pos:2,label:"Sol"},{note:"Sol",pos:2,label:"Sol"},
+{note:"La",pos:1,label:"La"},{note:"La",pos:1,label:"La"},{note:"Sol",pos:2,label:"Sol"},{note:"Fa",pos:3,label:"Fa"},
+{note:"Fa",pos:3,label:"Fa"},{note:"Mi",pos:4,label:"Mi"},{note:"Mi",pos:4,label:"Mi"},{note:"Re",pos:5,label:"Re"},
 {note:"Re",pos:5,label:"Re"},{note:"Do",pos:6,label:"Do"}
 ]},
-{name:"Für Elise (inicio)",difficulty:"Intermedio",notes:[
-{note:"Mi",pos:4,label:"Mi"},{note:"Re#",pos:4,label:"Re#"},
-{note:"Mi",pos:4,label:"Mi"},{note:"Re#",pos:4,label:"Re#"},
-{note:"Mi",pos:4,label:"Mi"},{note:"Si",pos:1,label:"Si"},
-{note:"Re",pos:5,label:"Re"},{note:"Do",pos:6,label:"Do"},
+{name:"Für Elise",difficulty:"Intermedio",notes:[
+{note:"Mi",pos:4,label:"Mi"},{note:"Re#",pos:4,label:"Re#"},{note:"Mi",pos:4,label:"Mi"},{note:"Re#",pos:4,label:"Re#"},
+{note:"Mi",pos:4,label:"Mi"},{note:"Si",pos:1,label:"Si"},{note:"Re",pos:5,label:"Re"},{note:"Do",pos:6,label:"Do"},
+{note:"La",pos:1,label:"La"},{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},{note:"La",pos:1,label:"La"},
+{note:"Si",pos:1,label:"Si"},{note:"Mi",pos:4,label:"Mi"},{note:"Sol#",pos:2,label:"Sol#"},{note:"Si",pos:1,label:"Si"},
+{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},{note:"Mi",pos:4,label:"Mi"},{note:"Re#",pos:4,label:"Re#"},
+{note:"Mi",pos:4,label:"Mi"},{note:"Re#",pos:4,label:"Re#"},{note:"Mi",pos:4,label:"Mi"},{note:"Si",pos:1,label:"Si"},
+{note:"Re",pos:5,label:"Re"},{note:"Do",pos:6,label:"Do"},{note:"La",pos:1,label:"La"},{note:"Do",pos:6,label:"Do"},
+{note:"Mi",pos:4,label:"Mi"},{note:"La",pos:1,label:"La"},{note:"Si",pos:1,label:"Si"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Do",pos:6,label:"Do"},{note:"Si",pos:1,label:"Si"},{note:"La",pos:1,label:"La"}
+]},
+{name:"Claro de Luna",difficulty:"Avanzado",notes:[
+{note:"Sol#",pos:2,label:"Sol#"},{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Sol#",pos:2,label:"Sol#"},{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Sol#",pos:2,label:"Sol#"},{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Sol#",pos:2,label:"Sol#"},{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},
+{note:"La",pos:1,label:"La"},{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},
+{note:"La",pos:1,label:"La"},{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},
+{note:"La",pos:1,label:"La"},{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},
+{note:"La",pos:1,label:"La"},{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Sol#",pos:2,label:"Sol#"},{note:"Re",pos:5,label:"Re"},{note:"Fa",pos:3,label:"Fa"},
+{note:"Sol#",pos:2,label:"Sol#"},{note:"Re",pos:5,label:"Re"},{note:"Fa",pos:3,label:"Fa"},
+{note:"Sol#",pos:2,label:"Sol#"},{note:"Re",pos:5,label:"Re"},{note:"Fa",pos:3,label:"Fa"},
+{note:"Sol#",pos:2,label:"Sol#"},{note:"Re",pos:5,label:"Re"},{note:"Fa",pos:3,label:"Fa"},
+{note:"Sol",pos:2,label:"Sol"},{note:"Re",pos:5,label:"Re"},{note:"Fa",pos:3,label:"Fa"},
+{note:"Sol",pos:2,label:"Sol"},{note:"Re",pos:5,label:"Re"},{note:"Fa",pos:3,label:"Fa"},
+{note:"Sol",pos:2,label:"Sol"},{note:"Re",pos:5,label:"Re"},{note:"Fa",pos:3,label:"Fa"},
+{note:"Sol",pos:2,label:"Sol"},{note:"Re",pos:5,label:"Re"},{note:"Fa",pos:3,label:"Fa"},
+{note:"Fa",pos:3,label:"Fa"},{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Fa",pos:3,label:"Fa"},{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Fa",pos:3,label:"Fa"},{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Fa",pos:3,label:"Fa"},{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Mi",pos:4,label:"Mi"},{note:"Si",pos:1,label:"Si"},{note:"Sol",pos:2,label:"Sol"},
+{note:"Mi",pos:4,label:"Mi"},{note:"Si",pos:1,label:"Si"},{note:"Sol",pos:2,label:"Sol"},
+{note:"Mi",pos:4,label:"Mi"},{note:"Si",pos:1,label:"Si"},{note:"Sol",pos:2,label:"Sol"},
+{note:"Mi",pos:4,label:"Mi"},{note:"Si",pos:1,label:"Si"},{note:"Sol",pos:2,label:"Sol"},
+{note:"Re#",pos:4,label:"Re#"},{note:"Sol#",pos:2,label:"Sol#"},{note:"Si",pos:1,label:"Si"},
+{note:"Re#",pos:4,label:"Re#"},{note:"Sol#",pos:2,label:"Sol#"},{note:"Si",pos:1,label:"Si"},
+{note:"Re#",pos:4,label:"Re#"},{note:"Sol#",pos:2,label:"Sol#"},{note:"Si",pos:1,label:"Si"},
+{note:"Re#",pos:4,label:"Re#"},{note:"Sol#",pos:2,label:"Sol#"},{note:"Si",pos:1,label:"Si"},
+{note:"Re#",pos:4,label:"Re#"},{note:"La",pos:1,label:"La"},{note:"Do",pos:6,label:"Do"},
+{note:"Re#",pos:4,label:"Re#"},{note:"La",pos:1,label:"La"},{note:"Do",pos:6,label:"Do"},
+{note:"Re#",pos:4,label:"Re#"},{note:"La",pos:1,label:"La"},{note:"Do",pos:6,label:"Do"},
+{note:"Re#",pos:4,label:"Re#"},{note:"La",pos:1,label:"La"},{note:"Do",pos:6,label:"Do"},
+{note:"Re#",pos:4,label:"Re#"},{note:"Sol#",pos:2,label:"Sol#"},{note:"Si",pos:1,label:"Si"},
+{note:"Re#",pos:4,label:"Re#"},{note:"Sol#",pos:2,label:"Sol#"},{note:"Si",pos:1,label:"Si"},
+{note:"Re#",pos:4,label:"Re#"},{note:"Sol#",pos:2,label:"Sol#"},{note:"Si",pos:1,label:"Si"},
+{note:"Re#",pos:4,label:"Re#"},{note:"Sol#",pos:2,label:"Sol#"},{note:"Si",pos:1,label:"Si"},
+{note:"Sol#",pos:2,label:"Sol#"},{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Sol#",pos:2,label:"Sol#"},{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Sol#",pos:2,label:"Sol#"},{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Sol#",pos:2,label:"Sol#"},{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},
+{note:"La",pos:1,label:"La"},{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},
+{note:"La",pos:1,label:"La"},{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},
+{note:"La",pos:1,label:"La"},{note:"Do",pos:6,label:"Do"},{note:"Mi",pos:4,label:"Mi"},
+{note:"La",pos:1,label:"La"},{note:"Mi",pos:4,label:"Mi"},{note:"Do",pos:6,label:"Do"},
 {note:"La",pos:1,label:"La"}
-]},
-{name:"El Danubio Azul",difficulty:"Intermedio",notes:[
-{note:"Re",pos:5,label:"Re"},{note:"La",pos:1,label:"La"},
-{note:"Fa",pos:3,label:"Fa"},{note:"Re",pos:5,label:"Re"},
-{note:"Fa",pos:3,label:"Fa"},{note:"La",pos:1,label:"La"},
-{note:"Re",pos:5,label:"Re"},{note:"Mi",pos:4,label:"Mi"},
-{note:"Sol",pos:2,label:"Sol"},{note:"Do",pos:6,label:"Do"},
-{note:"Mi",pos:4,label:"Mi"},{note:"Sol",pos:2,label:"Sol"}
-]},
-{name:"Minuet Bach",difficulty:"Intermedio",notes:[
-{note:"Re",pos:5,label:"Re"},{note:"Sol",pos:2,label:"Sol"},
-{note:"La",pos:1,label:"La"},{note:"Si",pos:1,label:"Si"},
-{note:"Do",pos:6,label:"Do"},{note:"Re",pos:5,label:"Re"},
-{note:"Sol",pos:2,label:"Sol"},{note:"Sol",pos:2,label:"Sol"},
-{note:"Mi",pos:4,label:"Mi"},{note:"Do",pos:6,label:"Do"},
-{note:"Re",pos:5,label:"Re"},{note:"Mi",pos:4,label:"Mi"},
-{note:"Fa",pos:3,label:"Fa"},{note:"Sol",pos:2,label:"Sol"}
 ]}
 ];
 
 var NOTE_TO_WHITE={"Do":0,"Re":1,"Mi":2,"Fa":3,"Sol":4,"La":5,"Si":6};
-var NOTE_FREQ={"Do":261.63,"Re":293.66,"Mi":329.63,"Fa":349.23,"Sol":392.00,"La":440.00,"Si":493.88,"Re#":311.13};
+var NOTE_FREQ={"Do":261.63,"Re":293.66,"Mi":329.63,"Fa":349.23,"Sol":392.00,"La":440.00,"Si":493.88,"Re#":311.13,"Sol#":415.30,"Do#":277.18,"Fa#":369.99};
 var currentSong=null,currentIdx=0,autoTimer=null,isPlaying=false,selectedSpeed=2000;
 var audioCtx=null;
 
@@ -172,33 +201,28 @@ function getAudioCtx(){
 if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
 return audioCtx;
 }
-
 function playNote(noteName){
-try {
+try{
 var ctx=getAudioCtx();
 var freq=NOTE_FREQ[noteName]||440;
 var osc=ctx.createOscillator();
 var gain=ctx.createGain();
-osc.connect(gain);
-gain.connect(ctx.destination);
+osc.connect(gain);gain.connect(ctx.destination);
 osc.type="triangle";
 osc.frequency.setValueAtTime(freq,ctx.currentTime);
 gain.gain.setValueAtTime(0.4,ctx.currentTime);
 gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.8);
-osc.start(ctx.currentTime);
-osc.stop(ctx.currentTime+0.8);
-} catch(e){}
+osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.8);
+}catch(e){}
 }
-
 function flashKey(note){
 var idx=NOTE_TO_WHITE[note];
-if(idx===undefined) return;
+if(idx===undefined)return;
 var k=document.getElementById("wk_"+idx);
-if(!k) return;
+if(!k)return;
 k.classList.add("flash");
 setTimeout(function(){k.classList.remove("flash");},300);
 }
-
 function init(){
 var sel=document.getElementById("songSelector");
 SONGS.forEach(function(s,i){
@@ -208,10 +232,8 @@ btn.textContent=s.name;
 btn.onclick=function(){loadSong(i);};
 sel.appendChild(btn);
 });
-buildPiano();
-loadSong(0);
+buildPiano();loadSong(0);
 }
-
 function buildPiano(){
 var outer=document.getElementById("pianoOuter");
 var bk=document.getElementById("blackKeys");
@@ -223,15 +245,13 @@ outer.insertBefore(k,bk);
 });
 [1,1,0,1,1,1,0,0].forEach(function(has){
 var s=document.createElement("div");s.className="bslot";
-if(has) s.innerHTML='<div class="black-key"></div>';
+if(has)s.innerHTML='<div class="black-key"></div>';
 bk.appendChild(s);
 });
 }
-
 function loadSong(idx){
 document.querySelectorAll(".song-btn").forEach(function(b,i){b.classList.toggle("active",i===idx);});
-currentSong=SONGS[idx];currentIdx=0;
-stopPlay();
+currentSong=SONGS[idx];currentIdx=0;stopPlay();
 document.getElementById("infoSong").textContent=currentSong.name;
 document.getElementById("infoDiff").textContent=currentSong.difficulty;
 document.getElementById("finishedMsg").style.display="none";
@@ -239,89 +259,71 @@ document.getElementById("btnPlay").textContent="▶ Iniciar";
 document.getElementById("btnPlay").className="btn-play";
 renderState();
 }
-
 function selectSpeed(ms){
 selectedSpeed=ms;
 document.getElementById("sp1").classList.toggle("active",ms===3000);
 document.getElementById("sp2").classList.toggle("active",ms===2000);
 document.getElementById("sp3").classList.toggle("active",ms===1200);
 document.getElementById("sp4").classList.toggle("active",ms===700);
-if(isPlaying){ stopPlay(); startPlay(); }
+if(isPlaying){stopPlay();startPlay();}
 }
-
 function togglePlay(){
-if(isPlaying){ pausePlay(); }
-else {
-if(currentIdx>=currentSong.notes.length-1) resetSong();
-startPlay();
+if(isPlaying){pausePlay();}
+else{if(currentIdx>=currentSong.notes.length-1)resetSong();startPlay();}
 }
-}
-
 function startPlay(){
 isPlaying=true;
 document.getElementById("btnPlay").textContent="⏸ Pausar";
 document.getElementById("btnPlay").className="btn-play paused";
 playCurrentAndSchedule();
 }
-
 function playCurrentAndSchedule(){
-if(!isPlaying) return;
+if(!isPlaying)return;
 renderState();
 playNote(currentSong.notes[currentIdx].note);
 flashKey(currentSong.notes[currentIdx].note);
-if(currentIdx>=currentSong.notes.length-1){
-finishSong();return;
-}
+if(currentIdx>=currentSong.notes.length-1){finishSong();return;}
 autoTimer=setTimeout(function(){
-if(!isPlaying) return;
+if(!isPlaying)return;
 currentIdx++;
 playCurrentAndSchedule();
 },selectedSpeed);
 }
-
 function pausePlay(){
 isPlaying=false;
 if(autoTimer){clearTimeout(autoTimer);autoTimer=null;}
 document.getElementById("btnPlay").textContent="▶ Continuar";
 document.getElementById("btnPlay").className="btn-play";
 }
-
 function stopPlay(){
 isPlaying=false;
 if(autoTimer){clearTimeout(autoTimer);autoTimer=null;}
 }
-
 function finishSong(){
 isPlaying=false;
 document.getElementById("btnPlay").textContent="✓ Terminada";
 document.getElementById("btnPlay").className="btn-play finished";
 document.getElementById("finishedMsg").style.display="block";
 }
-
 function resetSong(){
-stopPlay();
-currentIdx=0;
+stopPlay();currentIdx=0;
 document.getElementById("finishedMsg").style.display="none";
 document.getElementById("btnPlay").textContent="▶ Iniciar";
 document.getElementById("btnPlay").className="btn-play";
 renderState();
 }
-
 function nextNoteManual(){
-if(!currentSong) return;
+if(!currentSong)return;
 if(currentIdx<currentSong.notes.length-1){
-currentIdx++;
-renderState();
+currentIdx++;renderState();
 playNote(currentSong.notes[currentIdx].note);
 }
 }
-
 function prevNote(){
 if(currentIdx>0){currentIdx--;renderState();playNote(currentSong.notes[currentIdx].note);}
 }
-
 function renderState(){
-if(!currentSong) return;
+if(!currentSong)return;
 var n=currentSong.notes[currentIdx];
 var total=currentSong.notes.length;
 document.getElementById("infoNote").textContent=n.label;
@@ -333,10 +335,9 @@ document.getElementById("noteHint").textContent="Toca esta tecla en tu piano"+(p
 drawStaff(currentSong.notes,currentIdx);
 highlightPiano(n);
 }
-
 function drawStaff(notes,activeIdx){
 var svg=document.getElementById("staffSvg");
-while(svg.firstChild) svg.removeChild(svg.firstChild);
+while(svg.firstChild)svg.removeChild(svg.firstChild);
 var ns="http://www.w3.org/2000/svg";
 [18,31,44,57,70].forEach(function(y){
 var l=document.createElementNS(ns,"line");
@@ -357,9 +358,11 @@ bar.setAttribute("stroke","#bbb");bar.setAttribute("stroke-width","1.5");
 svg.appendChild(bar);
 var startX=115,spacing=44;
 var noteY={1:18,2:25,3:31,4:38,5:44,6:51,7:57};
+var start=Math.max(0,activeIdx-3);
 notes.forEach(function(n,i){
-if(i>=14) return;
-var x=startX+i*spacing,y=noteY[n.pos]||44,isActive=(i===activeIdx);
+var visIdx=i-start;
+if(visIdx<0||visIdx>=14)return;
+var x=startX+visIdx*spacing,y=noteY[n.pos]||44,isActive=(i===activeIdx);
 if(isActive){
 var r=document.createElementNS(ns,"rect");
 r.setAttribute("x",x-15);r.setAttribute("y","8");
@@ -387,13 +390,11 @@ lb.setAttribute("font-family","-apple-system,sans-serif");
 lb.textContent=n.label;svg.appendChild(lb);
 });
 }
-
 function highlightPiano(note){
 document.querySelectorAll(".white-key").forEach(function(k){k.classList.remove("highlight");});
 var idx=NOTE_TO_WHITE[note.note];
 if(idx!==undefined){var k=document.getElementById("wk_"+idx);if(k)k.classList.add("highlight");}
 }
-
 window.onload=function(){init();};
 </script>
 </body>
