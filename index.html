@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>PianoKids</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-text-size-adjust: 100%; }
+body { font-family: -apple-system, sans-serif; background: #f5f4f0; min-height: 100vh; padding: 16px; }
+.app { max-width: 780px; margin: 0 auto; }
+h1 { font-size: 22px; font-weight: 600; color: #1a1a1a; margin-bottom: 4px; }
+h1 span { color: #534AB7; }
+.subtitle { font-size: 13px; color: #888; margin-bottom: 16px; }
+.song-selector { display: -webkit-flex; display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.song-btn { padding: 7px 16px; border-radius: 20px; border: 1px solid #ccc; font-size: 13px; cursor: pointer; background: white; color: #555; -webkit-appearance: none; }
+.song-btn.active { background: #EEEDFE; border-color: #534AB7; color: #3C3489; font-weight: 600; }
+.info-bar { display: -webkit-flex; display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+.info-card { flex: 1; min-width: 100px; background: white; border-radius: 10px; border: 1px solid #e5e5e5; padding: 8px 12px; }
+.info-label { font-size: 11px; color: #aaa; margin-bottom: 2px; }
+.info-val { font-size: 15px; font-weight: 600; color: #1a1a1a; }
+.section { background: white; border-radius: 12px; border: 1px solid #e5e5e5; padding: 16px; margin-bottom: 14px; }
+.section-title { font-size: 12px; color: #aaa; margin-bottom: 10px; }
+.staff-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+svg.staff { display: block; min-width: 600px; height: 110px; }
+.controls { display: -webkit-flex; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+button { padding: 9px 16px; border-radius: 9px; border: 1px solid #ddd; font-size: 14px; cursor: pointer; background: white; color: #333; -webkit-appearance: none; }
+button.primary { background: #534AB7; border-color: #534AB7; color: white; font-weight: 600; }
+button.speed { padding: 6px 12px; font-size: 12px; }
+button.speed.active { background: #E1F5EE; border-color: #0F6E56; color: #085041; font-weight: 600; }
+.piano-scroll { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.piano-outer { position: relative; height: 140px; display: -webkit-flex; display: flex; min-width: 500px; }
+.white-key { -webkit-flex: 1; flex: 1; background: white; border: 1px solid #ccc; border-radius: 0 0 6px 6px; display: -webkit-flex; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px; cursor: pointer; position: relative; }
+.white-key.highlight { background: #9FE1CB; border-color: #0F6E56; }
+.key-label { font-size: 11px; color: #aaa; font-weight: 500; pointer-events: none; }
+.white-key.highlight .key-label { color: #085041; font-weight: 700; }
+.black-keys { position: absolute; top: 0; left: 0; width: 100%; height: 85px; pointer-events: none; display: -webkit-flex; display: flex; }
+.bslot { -webkit-flex: 1; flex: 1; position: relative; }
+.black-key { position: absolute; right: -32%; width: 64%; height: 100%; background: #222; border-radius: 0 0 4px 4px; z-index: 2; }
+.note-box { margin-top: 12px; background: #EEEDFE; border: 1px solid #AFA9EC; border-radius: 10px; padding: 12px 16px; display: -webkit-flex; display: flex; align-items: center; gap: 14px; }
+.note-big { font-size: 28px; font-weight: 700; color: #3C3489; min-width: 40px; }
+.note-hint { font-size: 13px; color: #555; line-height: 1.5; }
+.progress-bar { height: 6px; background: #eee; border-radius: 3px; overflow: hidden; margin-bottom: 14px; }
+.progress-fill { height: 100%; background: #534AB7; border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="app">
+<h1>Piano<span>Kids</span> 🎹</h1>
+<p class="subtitle">Aprende a leer partituras y a tocar el piano</p>
+<div class="song-selector" id="songSelector"></div>
+<div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+<div class="info-bar">
+<div class="info-card"><div class="info-label">Canción</div><div class="info-val" id="infoSong">—</div></div>
+<div class="info-card"><div class="info-label">Nota actual</div><div class="info-val" id="infoNote" style="color:#534AB7">—</div></div>
+<div class="info-card"><div class="info-label">Progreso</div><div class="info-val" id="infoProgress">—</div></div>
+<div class="info-card"><div class="info-label">Dificultad</div><div class="info-val" id="infoDiff">—</div></div>
+</div>
+<div class="section">
+<div class="section-title">Partitura — la nota morada es la que debes tocar ahora</div>
+<div class="staff-container">
+<svg class="staff" id="staffSvg" viewBox="0 0 720 110" xmlns="http://www.w3.org/2000/svg"></svg>
+</div>
+</div>
+<div class="controls">
+<button onclick="prevNote()">⬅ Anterior</button>
+<button class="primary" onclick="nextNote()">Siguiente ➡</button>
+<button onclick="resetSong()">⏮ Reiniciar</button>
+<div style="margin-left:auto;display:-webkit-flex;display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+<span style="font-size:12px;color:#888">Auto:</span>
+<button class="speed" id="spOff" onclick="setSpeed(0)">Manual</button>
+<button class="speed" id="spSlow" onclick="setSpeed(2000)">Lento</button>
+<button class="speed" id="spNorm" onclick="setSpeed(1000)">Normal</button>
+</div>
+</div>
+<div class="section">
+<div class="section-title">Teclado — la tecla verde es la que debes tocar en tu piano</div>
+<div class="piano-scroll">
+<div class="piano-outer" id="pianoOuter">
+<div class="black-keys" id="blackKeys"></div>
+</div>
+</div>
+<div class="note-box">
+<div class="note-big" id="noteBig">—</div>
+<div class="note-hint" id="noteHint">Selecciona una canción para comenzar</div>
+</div>
+</div>
+</div>
+<script>
+var SONGS=[
+{name:"Oda a la Alegría",difficulty:"Básico",notes:[
+{note:"Mi",pos:4,label:"Mi"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Fa",pos:3,label:"Fa"},{note:"Sol",pos:2,label:"Sol"},
+{note:"Sol",pos:2,label:"Sol"},{note:"Fa",pos:3,label:"Fa"},
+{note:"Mi",pos:4,label:"Mi"},{note:"Re",pos:5,label:"Re"},
+{note:"Do",pos:6,label:"Do"},{note:"Do",pos:6,label:"Do"},
+{note:"Re",pos:5,label:"Re"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Mi",pos:4,label:"Mi"},{note:"Re",pos:5,label:"Re"},
+{note:"Re",pos:5,label:"Re"}
+]},
+{name:"Cumpleaños Feliz",difficulty:"Básico",notes:[
+{note:"Do",pos:6,label:"Do"},{note:"Do",pos:6,label:"Do"},
+{note:"Re",pos:5,label:"Re"},{note:"Do",pos:6,label:"Do"},
+{note:"Fa",pos:3,label:"Fa"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Do",pos:6,label:"Do"},{note:"Do",pos:6,label:"Do"},
+{note:"Re",pos:5,label:"Re"},{note:"Do",pos:6,label:"Do"},
+{note:"Sol",pos:2,label:"Sol"},{note:"Fa",pos:3,label:"Fa"}
+]},
+{name:"Twinkle Twinkle",difficulty:"Básico",notes:[
+{note:"Do",pos:6,label:"Do"},{note:"Do",pos:6,label:"Do"},
+{note:"Sol",pos:2,label:"Sol"},{note:"Sol",pos:2,label:"Sol"},
+{note:"La",pos:1,label:"La"},{note:"La",pos:1,label:"La"},
+{note:"Sol",pos:2,label:"Sol"},{note:"Fa",pos:3,label:"Fa"},
+{note:"Fa",pos:3,label:"Fa"},{note:"Mi",pos:4,label:"Mi"},
+{note:"Mi",pos:4,label:"Mi"},{note:"Re",pos:5,label:"Re"},
+{note:"Re",pos:5,label:"Re"},{note:"Do",pos:6,label:"Do"}
+]},
+{name:"Für Elise (inicio)",difficulty:"Intermedio",notes:[
+{note:"Mi",pos:4,label:"Mi"},{note:"Re#",pos:4,label:"Re#"},
+{note:"Mi",pos:4,label:"Mi"},{note:"Re#",pos:4,label:"Re#"},
+{note:"Mi",pos:4,label:"Mi"},{note:"Si",pos:1,label:"Si"},
+{note:"Re",pos:5,label:"Re"},{note:"Do",pos:6,label:"Do"},
+{note:"La",pos:1,label:"La"}
+]}
+];
+var NOTE_TO_WHITE={"Do":0,"Re":1,"Mi":2,"Fa":3,"Sol":4,"La":5,"Si":6};
+var currentSong=null,currentIdx=0,autoTimer=null;
+function init(){
+var sel=document.getElementById("songSelector");
+SONGS.forEach(function(s,i){
+var btn=document.createElement("button");
+btn.className="song-btn"+(i===0?" active":"");
+btn.textContent=s.name;
+btn.onclick=function(){loadSong(i);};
+sel.appendChild(btn);
+});
+buildPiano();
+loadSong(0);
+}
+function buildPiano(){
+var outer=document.getElementById("pianoOuter");
+var bk=document.getElementById("blackKeys");
+var whites=["Do","Re","Mi","Fa","Sol","La","Si","Do"];
+whites.forEach(function(n,i){
+var k=document.createElement("div");
+k.className="white-key";
+k.id="wk_"+i;
+k.innerHTML='<span class="key-label">'+n+'</span>';
+outer.insertBefore(k,bk);
+});
+var pattern=[1,1,0,1,1,1,0,0];
+pattern.forEach(function(has){
+var s=document.createElement("div");
+s.className="bslot";
+if(has) s.innerHTML='<div class="black-key"></div>';
+bk.appendChild(s);
+});
+}
+function loadSong(idx){
+document.querySelectorAll(".song-btn").forEach(function(b,i){
+b.classList.toggle("active",i===idx);
+});
+currentSong=SONGS[idx];
+currentIdx=0;
+clearAuto();
+document.getElementById("infoSong").textContent=currentSong.name;
+document.getElementById("infoDiff").textContent=currentSong.difficulty;
+renderState();
+}
+function renderState(){
+if(!currentSong) return;
+var n=currentSong.notes[currentIdx];
+var total=currentSong.notes.length;
+document.getElementById("infoNote").textContent=n.label;
+document.getElementById("infoProgress").textContent=(currentIdx+1)+" / "+total;
+document.getElementById("progressFill").style.width=Math.round((currentIdx+1)/total*100)+"%";
+document.getElementById("noteBig").textContent=n.label;
+var pos=NOTE_TO_WHITE[n.note];
+document.getElementById("noteHint").textContent="Toca esta tecla en tu piano"+(pos!==undefined?" — "+(pos+1)+"ª tecla blanca desde la izquierda":"");
+drawStaff(currentSong.notes,currentIdx);
+highlightPiano(n);
+}
+function drawStaff(notes,activeIdx){
+var svg=document.getElementById("staffSvg");
+while(svg.firstChild) svg.removeChild(svg.firstChild);
+var ns="http://www.w3.org/2000/svg";
+var lineY=[18,31,44,57,70];
+lineY.forEach(function(y){
+var l=document.createElementNS(ns,"line");
+l.setAttribute("x1","40");l.setAttribute("x2","710");
+l.setAttribute("y1",y);l.setAttribute("y2",y);
+l.setAttribute("stroke","#ccc");l.setAttribute("stroke-width","1");
+svg.appendChild(l);
+});
+var clef=document.createElementNS(ns,"text");
+clef.setAttribute("x","44");clef.setAttribute("y","60");
+clef.setAttribute("font-size","52");clef.setAttribute("fill","#999");
+clef.setAttribute("font-family","Georgia,serif");
+clef.textContent="𝄞";
+svg.appendChild(clef);
+var bar=document.createElementNS(ns,"line");
+bar.setAttribute("x1","95");bar.setAttribute("x2","95");
+bar.setAttribute("y1","18");bar.setAttribute("y2","70");
+bar.setAttribute("stroke","#bbb");bar.setAttribute("stroke-width","1.5");
+svg.appendChild(bar);
+var startX=115,spacing=44;
+var noteY={1:18,2:25,3:31,4:38,5:44,6:51,7:57};
+notes.forEach(function(n,i){
+if(i>=14) return;
+var x=startX+i*spacing;
+var y=noteY[n.pos]||44;
+var isActive=(i===activeIdx);
+if(isActive){
+var r=document.createElementNS(ns,"rect");
+r.setAttribute("x",x-15);r.setAttribute("y","8");
+r.setAttribute("width","34");r.setAttribute("height","72");
+r.setAttribute("rx","5");r.setAttribute("fill","#534AB7");r.setAttribute("opacity","0.13");
+svg.appendChild(r);
+}
+var e=document.createElementNS(ns,"ellipse");
+e.setAttribute("cx",x);e.setAttribute("cy",y);
+e.setAttribute("rx","9");e.setAttribute("ry","6.5");
+e.setAttribute("fill",isActive?"#534AB7":"#aaa");
+svg.appendChild(e);
+var st=document.createElementNS(ns,"line");
+st.setAttribute("x1",x+9);st.setAttribute("x2",x+9);
+st.setAttribute("y1",y);st.setAttribute("y2",y-28);
+st.setAttribute("stroke",isActive?"#534AB7":"#ccc");
+st.setAttribute("stroke-width","1.5");
+svg.appendChild(st);
+var lb=document.createElementNS(ns,"text");
+lb.setAttribute("x",x-6);lb.setAttribute("y","90");
+lb.setAttribute("font-size","10");
+lb.setAttribute("fill",isActive?"#3C3489":"#bbb");
+lb.setAttribute("font-weight",isActive?"bold":"normal");
+lb.setAttribute("font-family","-apple-system,sans-serif");
+lb.textContent=n.label;
+svg.appendChild(lb);
+});
+}
+function highlightPiano(note){
+document.querySelectorAll(".white-key").forEach(function(k){k.classList.remove("highlight");});
+var idx=NOTE_TO_WHITE[note.note];
+if(idx!==undefined){
+var k=document.getElementById("wk_"+idx);
+if(k) k.classList.add("highlight");
+}
+}
+function nextNote(){if(!currentSong) return;if(currentIdx<currentSong.notes.length-1){currentIdx++;renderState();}}
+function prevNote(){if(currentIdx>0){currentIdx--;renderState();}}
+function resetSong(){currentIdx=0;clearAuto();setSpeedUI(0);if(currentSong) renderState();}
+function setSpeed(ms){
+clearAuto();setSpeedUI(ms);
+if(ms>0) autoTimer=setInterval(function(){
+if(currentIdx>=currentSong.notes.length-1){clearAuto();return;}
+nextNote();
+},ms);
+}
+function clearAuto(){if(autoTimer){clearInterval(autoTimer);autoTimer=null;}}
+function setSpeedUI(ms){
+document.getElementById("spOff").classList.toggle("active",ms===0);
+document.getElementById("spSlow").classList.toggle("active",ms===2000);
+document.getElementById("spNorm").classList.toggle("active",ms===1000);
+}
+window.onload=function(){init();};
+</script>
+</body>
+</html>
