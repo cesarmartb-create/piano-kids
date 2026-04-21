@@ -24,8 +24,8 @@ h1 span { color: #534AB7; }
 svg.staff { display: block; min-width: 600px; height: 110px; }
 .speed-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
 .speed-label { font-size: 13px; color: #555; font-weight: 600; }
-.speed-btn { padding: 8px 16px; border-radius: 20px; border: 1px solid #ccc; font-size: 13px; cursor: pointer; background: white; color: #555; -webkit-appearance: none; }
-.speed-btn.active { background: #EEEDFE; border-color: #534AB7; color: #3C3489; font-weight: 600; }
+.speed-btn { padding: 8px 18px; border-radius: 20px; border: 2px solid #ddd; font-size: 13px; cursor: pointer; background: white; color: #888; -webkit-appearance: none; font-weight: 500; transition: all 0.15s; }
+.speed-btn.active { background: #534AB7; border-color: #534AB7; color: white; font-weight: 700; box-shadow: 0 2px 8px rgba(83,74,183,0.3); }
 .main-controls { display: flex; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
 .btn-play { padding: 14px 28px; border-radius: 12px; border: none; font-size: 17px; font-weight: 700; cursor: pointer; background: #534AB7; color: white; flex: 1; min-width: 130px; -webkit-appearance: none; }
 .btn-play.paused { background: #0F6E56; }
@@ -40,7 +40,10 @@ svg.staff { display: block; min-width: 600px; height: 110px; }
 .chord-notes { display: flex; gap: 10px; flex-wrap: wrap; }
 .chord-note { background: #534AB7; color: white; border-radius: 8px; padding: 6px 14px; font-size: 15px; font-weight: 700; }
 .chord-note.black-note { background: #3C3489; }
-.lyric-box { background: #f0faf5; border: 1px solid #9FE1CB; border-radius: 10px; padding: 10px 16px; margin-bottom: 14px; font-size: 14px; color: #085041; font-weight: 500; text-align: center; }
+.karaoke-box { background: #1a1a2e; border-radius: 12px; padding: 16px 20px; margin-bottom: 14px; min-height: 60px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px; }
+.karaoke-word { font-size: 20px; font-weight: 600; color: #555; padding: 2px 4px; border-radius: 4px; transition: color 0.1s; }
+.karaoke-word.active { color: #fff; background: #534AB7; }
+.karaoke-word.done { color: #888; }
 .piano-wrap { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
 .piano-3oct { position: relative; display: flex; height: 160px; min-width: 520px; }
 .wkey { flex: 1; background: white; border: 1px solid #bbb; border-radius: 0 0 6px 6px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 6px; position: relative; min-width: 18px; }
@@ -78,13 +81,13 @@ svg.staff { display: block; min-width: 600px; height: 110px; }
 <svg class="staff" id="staffSvg" viewBox="0 0 720 110" xmlns="http://www.w3.org/2000/svg"></svg>
 </div>
 </div>
-<div class="lyric-box" id="lyricBox">Selecciona una canción para comenzar</div>
+<div class="karaoke-box" id="karaokeBox"></div>
 <div class="speed-bar">
 <span class="speed-label">Velocidad:</span>
-<button class="speed-btn" id="sp1" onclick="selectSpeed(1500)">Muy lento</button>
-<button class="speed-btn active" id="sp2" onclick="selectSpeed(900)">Lento</button>
-<button class="speed-btn" id="sp3" onclick="selectSpeed(600)">Normal</button>
-<button class="speed-btn" id="sp4" onclick="selectSpeed(350)">Rápido</button>
+<button class="speed-btn" id="sp1" onclick="selectSpeed(0.5)">Muy lento</button>
+<button class="speed-btn" id="sp2" onclick="selectSpeed(0.75)">Lento</button>
+<button class="speed-btn active" id="sp3" onclick="selectSpeed(1)">Normal</button>
+<button class="speed-btn" id="sp4" onclick="selectSpeed(1.5)">Rápido</button>
 </div>
 <div class="main-controls">
 <button class="btn-play" id="btnPlay" onclick="togglePlay()">▶ Iniciar</button>
@@ -109,132 +112,167 @@ svg.staff { display: block; min-width: 600px; height: 110px; }
 <script>
 var NOTES_IN_OCT=["Do","Re","Mi","Fa","Sol","La","Si"];
 var BLACK_AFTER={"Do":true,"Re":true,"Mi":false,"Fa":true,"Sol":true,"La":true,"Si":false};
-var NOTE_TO_WHITE={"Do":0,"Re":1,"Mi":2,"Fa":3,"Sol":4,"La":5,"Si":6};
-var NOTE_FREQ_BASE={"Do":261.63,"Re":293.66,"Mi":329.63,"Fa":349.23,"Sol":392.00,"La":440.00,"Si":493.88};
-var BLACK_FREQ={"Do#":277.18,"Re#":311.13,"Fa#":369.99,"Sol#":415.30,"La#":466.16};
-var audioCtx=null;
+var NOTE_FREQ_BASE={"Do":261.63,"Re":293.66,"Mi":329.63,"Fa":349.23,"Sol":392.00,"La":440.00,"Si":493.88,"Do#":277.18,"Re#":311.13,"Fa#":369.99,"Sol#":415.30,"La#":466.16,"Do#":277.18};
+
+var N=1, H=0.5, Q=0.25, E=0.125, D=1.5;
 
 var SONGS=[
-{name:"Oda a la Alegría",difficulty:"Intermedio",notes:[
-[{n:"Mi",o:4,l:"Mi"}],[{n:"Mi",o:4,l:"Mi"}],[{n:"Fa",o:4,l:"Fa"}],[{n:"Sol",o:4,l:"Sol"}],
-[{n:"Sol",o:4,l:"Sol"}],[{n:"Fa",o:4,l:"Fa"}],[{n:"Mi",o:4,l:"Mi"}],[{n:"Re",o:4,l:"Re"}],
-[{n:"Do",o:4,l:"Do"}],[{n:"Do",o:4,l:"Do"}],[{n:"Re",o:4,l:"Re"}],[{n:"Mi",o:4,l:"Mi"}],
-[{n:"Mi",o:4,l:"Mi"}],[{n:"Re",o:4,l:"Re"}],[{n:"Re",o:4,l:"Re"}],[{n:"Mi",o:4,l:"Mi"}],
-[{n:"Mi",o:4,l:"Mi"}],[{n:"Fa",o:4,l:"Fa"}],[{n:"Sol",o:4,l:"Sol"}],[{n:"Sol",o:4,l:"Sol"}],
-[{n:"Fa",o:4,l:"Fa"}],[{n:"Mi",o:4,l:"Mi"}],[{n:"Re",o:4,l:"Re"}],[{n:"Do",o:4,l:"Do"}],
-[{n:"Do",o:4,l:"Do"}],[{n:"Re",o:4,l:"Re"}],[{n:"Mi",o:4,l:"Mi"}],[{n:"Re",o:4,l:"Re"}],
-[{n:"Do",o:4,l:"Do"}],[{n:"Do",o:4,l:"Do"}]
+{name:"Oda a la Alegría",difficulty:"Intermedio",bpm:120,lyrics:[],notes:[
+[{n:"Mi",o:4}],[{n:"Mi",o:4}],[{n:"Fa",o:4}],[{n:"Sol",o:4}],
+[{n:"Sol",o:4}],[{n:"Fa",o:4}],[{n:"Mi",o:4}],[{n:"Re",o:4}],
+[{n:"Do",o:4}],[{n:"Do",o:4}],[{n:"Re",o:4}],[{n:"Mi",o:4}],
+[{n:"Mi",o:4,d:D}],[{n:"Re",o:4,d:H}],[{n:"Re",o:4,d:H+N}],
+[{n:"Mi",o:4}],[{n:"Mi",o:4}],[{n:"Fa",o:4}],[{n:"Sol",o:4}],
+[{n:"Sol",o:4}],[{n:"Fa",o:4}],[{n:"Mi",o:4}],[{n:"Re",o:4}],
+[{n:"Do",o:4}],[{n:"Do",o:4}],[{n:"Re",o:4}],[{n:"Mi",o:4}],
+[{n:"Re",o:4,d:D}],[{n:"Do",o:4,d:H}],[{n:"Do",o:4,d:H+N}]
 ]},
-{name:"Cumpleaños Feliz",difficulty:"Básico",notes:[
-[{n:"Do",o:4,l:"Do"}],[{n:"Do",o:4,l:"Do"}],[{n:"Re",o:4,l:"Re"}],[{n:"Do",o:4,l:"Do"}],
-[{n:"Fa",o:4,l:"Fa"}],[{n:"Mi",o:4,l:"Mi"}],[{n:"Do",o:4,l:"Do"}],[{n:"Do",o:4,l:"Do"}],
-[{n:"Re",o:4,l:"Re"}],[{n:"Do",o:4,l:"Do"}],[{n:"Sol",o:4,l:"Sol"}],[{n:"Fa",o:4,l:"Fa"}],
-[{n:"Do",o:4,l:"Do"}],[{n:"Do",o:5,l:"Do"}],[{n:"La",o:4,l:"La"}],[{n:"Fa",o:4,l:"Fa"}],
-[{n:"Mi",o:4,l:"Mi"}],[{n:"Re",o:4,l:"Re"}],[{n:"La",o:4,l:"La"}],[{n:"La",o:4,l:"La"}],
-[{n:"Fa",o:4,l:"Fa"}],[{n:"Sol",o:4,l:"Sol"}],[{n:"Fa",o:4,l:"Fa"}]
+{name:"Cumpleaños Feliz",difficulty:"Básico",bpm:120,lyrics:[
+{w:"¡Cum-",i:0},{w:"ple-",i:1},{w:"a-",i:2},{w:"ños",i:3},{w:"fe-",i:4},{w:"liz!",i:5},
+{w:"¡Cum-",i:6},{w:"ple-",i:7},{w:"a-",i:8},{w:"ños",i:9},{w:"fe-",i:10},{w:"liz!",i:11},
+{w:"¡Cum-",i:12},{w:"ple-",i:13},{w:"a-",i:14},{w:"ños",i:15},{w:"que-",i:16},{w:"ri-",i:17},{w:"da!",i:18},
+{w:"¡Cum-",i:19},{w:"ple-",i:20},{w:"a-",i:21},{w:"ños",i:22},{w:"fe-",i:23},{w:"liz!",i:24}
+],notes:[
+[{n:"Do",o:4,d:Q}],[{n:"Do",o:4,d:Q}],[{n:"Re",o:4,d:H}],[{n:"Do",o:4,d:H}],
+[{n:"Fa",o:4,d:H}],[{n:"Mi",o:4,d:N+H}],
+[{n:"Do",o:4,d:Q}],[{n:"Do",o:4,d:Q}],[{n:"Re",o:4,d:H}],[{n:"Do",o:4,d:H}],
+[{n:"Sol",o:4,d:H}],[{n:"Fa",o:4,d:N+H}],
+[{n:"Do",o:4,d:Q}],[{n:"Do",o:4,d:Q}],[{n:"Do",o:5,d:H}],[{n:"La",o:4,d:H}],
+[{n:"Fa",o:4,d:H}],[{n:"Mi",o:4,d:H}],[{n:"Re",o:4,d:N+H}],
+[{n:"La",o:4,d:Q}],[{n:"La",o:4,d:Q}],[{n:"Fa",o:4,d:H}],[{n:"Sol",o:4,d:H}],
+[{n:"Fa",o:4,d:N+H}]
 ]},
-{name:"Twinkle Twinkle",difficulty:"Básico",notes:[
-[{n:"Do",o:4,l:"Do"}],[{n:"Do",o:4,l:"Do"}],[{n:"Sol",o:4,l:"Sol"}],[{n:"Sol",o:4,l:"Sol"}],
-[{n:"La",o:4,l:"La"}],[{n:"La",o:4,l:"La"}],[{n:"Sol",o:4,l:"Sol"}],[{n:"Fa",o:4,l:"Fa"}],
-[{n:"Fa",o:4,l:"Fa"}],[{n:"Mi",o:4,l:"Mi"}],[{n:"Mi",o:4,l:"Mi"}],[{n:"Re",o:4,l:"Re"}],
-[{n:"Re",o:4,l:"Re"}],[{n:"Do",o:4,l:"Do"}],[{n:"Sol",o:4,l:"Sol"}],[{n:"Sol",o:4,l:"Sol"}],
-[{n:"Fa",o:4,l:"Fa"}],[{n:"Fa",o:4,l:"Fa"}],[{n:"Mi",o:4,l:"Mi"}],[{n:"Mi",o:4,l:"Mi"}],
-[{n:"Re",o:4,l:"Re"}],[{n:"Sol",o:4,l:"Sol"}],[{n:"Sol",o:4,l:"Sol"}],[{n:"Fa",o:4,l:"Fa"}],
-[{n:"Fa",o:4,l:"Fa"}],[{n:"Mi",o:4,l:"Mi"}],[{n:"Mi",o:4,l:"Mi"}],[{n:"Re",o:4,l:"Re"}],
-[{n:"Do",o:4,l:"Do"}],[{n:"Do",o:4,l:"Do"}],[{n:"Sol",o:4,l:"Sol"}],[{n:"Sol",o:4,l:"Sol"}],
-[{n:"La",o:4,l:"La"}],[{n:"La",o:4,l:"La"}],[{n:"Sol",o:4,l:"Sol"}],[{n:"Fa",o:4,l:"Fa"}],
-[{n:"Fa",o:4,l:"Fa"}],[{n:"Mi",o:4,l:"Mi"}],[{n:"Mi",o:4,l:"Mi"}],[{n:"Re",o:4,l:"Re"}],
-[{n:"Re",o:4,l:"Re"}],[{n:"Do",o:4,l:"Do"}]
+{name:"Twinkle Twinkle",difficulty:"Básico",bpm:110,lyrics:[
+{w:"Twin-",i:0},{w:"kle",i:1},{w:"twin-",i:2},{w:"kle",i:3},{w:"lit-",i:4},{w:"tle",i:5},{w:"star",i:6},
+{w:"How",i:7},{w:"I",i:8},{w:"won-",i:9},{w:"der",i:10},{w:"what",i:11},{w:"you",i:12},{w:"are",i:13},
+{w:"Up",i:14},{w:"a-",i:15},{w:"bove",i:16},{w:"the",i:17},{w:"world",i:18},{w:"so",i:19},{w:"high",i:20},
+{w:"Like",i:21},{w:"a",i:22},{w:"dia-",i:23},{w:"mond",i:24},{w:"in",i:25},{w:"the",i:26},{w:"sky",i:27}
+],notes:[
+[{n:"Do",o:4,d:N}],[{n:"Do",o:4,d:N}],[{n:"Sol",o:4,d:N}],[{n:"Sol",o:4,d:N}],
+[{n:"La",o:4,d:N}],[{n:"La",o:4,d:N}],[{n:"Sol",o:4,d:H+N}],
+[{n:"Fa",o:4,d:N}],[{n:"Fa",o:4,d:N}],[{n:"Mi",o:4,d:N}],[{n:"Mi",o:4,d:N}],
+[{n:"Re",o:4,d:N}],[{n:"Re",o:4,d:N}],[{n:"Do",o:4,d:H+N}],
+[{n:"Sol",o:4,d:N}],[{n:"Sol",o:4,d:N}],[{n:"Fa",o:4,d:N}],[{n:"Fa",o:4,d:N}],
+[{n:"Mi",o:4,d:N}],[{n:"Mi",o:4,d:N}],[{n:"Re",o:4,d:H+N}],
+[{n:"Sol",o:4,d:N}],[{n:"Sol",o:4,d:N}],[{n:"Fa",o:4,d:N}],[{n:"Fa",o:4,d:N}],
+[{n:"Mi",o:4,d:N}],[{n:"Mi",o:4,d:N}],[{n:"Re",o:4,d:H+N}]
 ]},
-{name:"Für Elise",difficulty:"Intermedio",notes:[
-[{n:"Mi",o:5,l:"Mi"}],[{n:"Re#",o:5,l:"Re#"}],[{n:"Mi",o:5,l:"Mi"}],[{n:"Re#",o:5,l:"Re#"}],
-[{n:"Mi",o:5,l:"Mi"}],[{n:"Si",o:4,l:"Si"}],[{n:"Re",o:5,l:"Re"}],[{n:"Do",o:5,l:"Do"}],
-[{n:"La",o:4,l:"La"}],[{n:"Do",o:4,l:"Do"},{n:"Mi",o:4,l:"Mi"},{n:"La",o:4,l:"La"}],
-[{n:"Mi",o:4,l:"Mi"}],[{n:"La",o:4,l:"La"},{n:"Do",o:5,l:"Do"}],
-[{n:"Si",o:4,l:"Si"}],[{n:"Mi",o:4,l:"Mi"},{n:"Sol#",o:4,l:"Sol#"},{n:"Re",o:5,l:"Re"}],
-[{n:"Mi",o:4,l:"Mi"}],[{n:"Mi",o:5,l:"Mi"}],[{n:"Re#",o:5,l:"Re#"}],
-[{n:"Mi",o:5,l:"Mi"}],[{n:"Re#",o:5,l:"Re#"}],[{n:"Mi",o:5,l:"Mi"}],
-[{n:"Si",o:4,l:"Si"}],[{n:"Re",o:5,l:"Re"}],[{n:"Do",o:5,l:"Do"}],
-[{n:"La",o:4,l:"La"}],[{n:"Do",o:4,l:"Do"},{n:"Mi",o:4,l:"Mi"},{n:"La",o:4,l:"La"}],
-[{n:"Mi",o:4,l:"Mi"}],[{n:"La",o:4,l:"La"},{n:"Do",o:5,l:"Do"}],
-[{n:"Si",o:4,l:"Si"}],[{n:"Mi",o:4,l:"Mi"},{n:"Sol#",o:4,l:"Sol#"},{n:"Mi",o:5,l:"Mi"}],
-[{n:"Do",o:5,l:"Do"}],[{n:"Si",o:4,l:"Si"}],[{n:"La",o:4,l:"La"}]
+{name:"Für Elise",difficulty:"Intermedio",bpm:60,lyrics:[],notes:[
+[{n:"Mi",o:5,d:Q}],[{n:"Re#",o:5,d:Q}],[{n:"Mi",o:5,d:Q}],[{n:"Re#",o:5,d:Q}],
+[{n:"Mi",o:5,d:Q}],[{n:"Si",o:4,d:Q}],[{n:"Re",o:5,d:Q}],[{n:"Do",o:5,d:Q}],
+[{n:"La",o:4,d:H}],[{n:"Do",o:4,l:"Do"},{n:"Mi",o:4},{n:"La",o:4,d:Q}],
+[{n:"Mi",o:4,d:Q}],[{n:"La",o:4},{n:"Do",o:5,d:Q}],
+[{n:"Si",o:4,d:H}],[{n:"Mi",o:4},{n:"Sol#",o:4},{n:"Re",o:5,d:Q}],
+[{n:"Mi",o:4,d:Q}],[{n:"Mi",o:5,d:Q}],[{n:"Re#",o:5,d:Q}],
+[{n:"Mi",o:5,d:Q}],[{n:"Re#",o:5,d:Q}],[{n:"Mi",o:5,d:Q}],
+[{n:"Si",o:4,d:Q}],[{n:"Re",o:5,d:Q}],[{n:"Do",o:5,d:Q}],
+[{n:"La",o:4,d:H}],[{n:"Do",o:4},{n:"Mi",o:4},{n:"La",o:4,d:Q}],
+[{n:"Mi",o:4,d:Q}],[{n:"La",o:4},{n:"Do",o:5,d:Q}],
+[{n:"Si",o:4,d:H}],[{n:"Mi",o:4},{n:"Sol#",o:4},{n:"Mi",o:5,d:Q}],
+[{n:"Do",o:5,d:Q}],[{n:"Si",o:4,d:Q}],[{n:"La",o:4,d:H}]
 ]},
-{name:"Claro de Luna",difficulty:"Avanzado",notes:[
-[{n:"Sol#",o:3,l:"Sol#"},{n:"Do",o:4,l:"Do"},{n:"Mi",o:4,l:"Mi"}],
-[{n:"Sol#",o:3,l:"Sol#"},{n:"Do",o:4,l:"Do"},{n:"Mi",o:4,l:"Mi"}],
-[{n:"Sol#",o:3,l:"Sol#"},{n:"Do",o:4,l:"Do"},{n:"Mi",o:4,l:"Mi"}],
-[{n:"Sol#",o:3,l:"Sol#"},{n:"Do",o:4,l:"Do"},{n:"Mi",o:4,l:"Mi"}],
-[{n:"La",o:3,l:"La"},{n:"Do",o:4,l:"Do"},{n:"Mi",o:4,l:"Mi"}],
-[{n:"La",o:3,l:"La"},{n:"Do",o:4,l:"Do"},{n:"Mi",o:4,l:"Mi"}],
-[{n:"La",o:3,l:"La"},{n:"Do",o:4,l:"Do"},{n:"Mi",o:4,l:"Mi"}],
-[{n:"La",o:3,l:"La"},{n:"Do",o:4,l:"Do"},{n:"Mi",o:4,l:"Mi"}],
-[{n:"Sol#",o:3,l:"Sol#"},{n:"Re",o:4,l:"Re"},{n:"Fa",o:4,l:"Fa"}],
-[{n:"Sol#",o:3,l:"Sol#"},{n:"Re",o:4,l:"Re"},{n:"Fa",o:4,l:"Fa"}],
-[{n:"Sol#",o:3,l:"Sol#"},{n:"Re",o:4,l:"Re"},{n:"Fa",o:4,l:"Fa"}],
-[{n:"Sol#",o:3,l:"Sol#"},{n:"Re",o:4,l:"Re"},{n:"Fa",o:4,l:"Fa"}],
-[{n:"Sol",o:3,l:"Sol"},{n:"Re",o:4,l:"Re"},{n:"Fa",o:4,l:"Fa"}],
-[{n:"Sol",o:3,l:"Sol"},{n:"Re",o:4,l:"Re"},{n:"Fa",o:4,l:"Fa"}],
-[{n:"Sol",o:3,l:"Sol"},{n:"Re",o:4,l:"Re"},{n:"Fa",o:4,l:"Fa"}],
-[{n:"Sol",o:3,l:"Sol"},{n:"Re",o:4,l:"Re"},{n:"Fa",o:4,l:"Fa"}],
-[{n:"Fa",o:3,l:"Fa"},{n:"Do",o:4,l:"Do"},{n:"Mi",o:4,l:"Mi"}],
-[{n:"Fa",o:3,l:"Fa"},{n:"Do",o:4,l:"Do"},{n:"Mi",o:4,l:"Mi"}],
-[{n:"Fa",o:3,l:"Fa"},{n:"Do",o:4,l:"Do"},{n:"Mi",o:4,l:"Mi"}],
-[{n:"Fa",o:3,l:"Fa"},{n:"Do",o:4,l:"Do"},{n:"Mi",o:4,l:"Mi"}],
-[{n:"Mi",o:3,l:"Mi"},{n:"Si",o:3,l:"Si"},{n:"Sol",o:4,l:"Sol"}],
-[{n:"Mi",o:3,l:"Mi"},{n:"Si",o:3,l:"Si"},{n:"Sol",o:4,l:"Sol"}],
-[{n:"Mi",o:3,l:"Mi"},{n:"Si",o:3,l:"Si"},{n:"Sol",o:4,l:"Sol"}],
-[{n:"Mi",o:3,l:"Mi"},{n:"Si",o:3,l:"Si"},{n:"Sol",o:4,l:"Sol"}],
-[{n:"Re#",o:3,l:"Re#"},{n:"Sol#",o:3,l:"Sol#"},{n:"Si",o:3,l:"Si"}],
-[{n:"Re#",o:3,l:"Re#"},{n:"Sol#",o:3,l:"Sol#"},{n:"Si",o:3,l:"Si"}],
-[{n:"Re#",o:3,l:"Re#"},{n:"Sol#",o:3,l:"Sol#"},{n:"Si",o:3,l:"Si"}],
-[{n:"Re#",o:3,l:"Re#"},{n:"Sol#",o:3,l:"Sol#"},{n:"Si",o:3,l:"Si"}],
-[{n:"Re#",o:3,l:"Re#"},{n:"La",o:3,l:"La"},{n:"Do",o:4,l:"Do"}],
-[{n:"Re#",o:3,l:"Re#"},{n:"La",o:3,l:"La"},{n:"Do",o:4,l:"Do"}],
-[{n:"Re#",o:3,l:"Re#"},{n:"La",o:3,l:"La"},{n:"Do",o:4,l:"Do"}],
-[{n:"Re#",o:3,l:"Re#"},{n:"La",o:3,l:"La"},{n:"Do",o:4,l:"Do"}],
-[{n:"Re#",o:3,l:"Re#"},{n:"Sol#",o:3,l:"Sol#"},{n:"Si",o:3,l:"Si"}],
-[{n:"Re#",o:3,l:"Re#"},{n:"Sol#",o:3,l:"Sol#"},{n:"Si",o:3,l:"Si"}],
-[{n:"Sol#",o:3,l:"Sol#"},{n:"Do",o:4,l:"Do"},{n:"Mi",o:4,l:"Mi"}],
-[{n:"Sol#",o:3,l:"Sol#"},{n:"Do",o:4,l:"Do"},{n:"Mi",o:4,l:"Mi"}],
-[{n:"La",o:3,l:"La"},{n:"Do",o:4,l:"Do"},{n:"Mi",o:4,l:"Mi"}],
-[{n:"La",o:3,l:"La"},{n:"Do",o:4,l:"Do"},{n:"Mi",o:4,l:"Mi"}],
-[{n:"La",o:3,l:"La"},{n:"Mi",o:4,l:"Mi"},{n:"Do",o:5,l:"Do"}],
-[{n:"La",o:3,l:"La"},{n:"Mi",o:4,l:"Mi"},{n:"Do",o:5,l:"Do"}]
+{name:"Claro de Luna",difficulty:"Avanzado",bpm:50,lyrics:[],notes:[
+[{n:"Sol#",o:3},{n:"Do",o:4},{n:"Mi",o:4,d:Q}],
+[{n:"Sol#",o:3},{n:"Do",o:4},{n:"Mi",o:4,d:Q}],
+[{n:"Sol#",o:3},{n:"Do",o:4},{n:"Mi",o:4,d:Q}],
+[{n:"Sol#",o:3},{n:"Do",o:4},{n:"Mi",o:4,d:N}],
+[{n:"La",o:3},{n:"Do",o:4},{n:"Mi",o:4,d:Q}],
+[{n:"La",o:3},{n:"Do",o:4},{n:"Mi",o:4,d:Q}],
+[{n:"La",o:3},{n:"Do",o:4},{n:"Mi",o:4,d:Q}],
+[{n:"La",o:3},{n:"Do",o:4},{n:"Mi",o:4,d:N}],
+[{n:"Sol#",o:3},{n:"Re",o:4},{n:"Fa",o:4,d:Q}],
+[{n:"Sol#",o:3},{n:"Re",o:4},{n:"Fa",o:4,d:Q}],
+[{n:"Sol#",o:3},{n:"Re",o:4},{n:"Fa",o:4,d:Q}],
+[{n:"Sol#",o:3},{n:"Re",o:4},{n:"Fa",o:4,d:N}],
+[{n:"Sol",o:3},{n:"Re",o:4},{n:"Fa",o:4,d:Q}],
+[{n:"Sol",o:3},{n:"Re",o:4},{n:"Fa",o:4,d:Q}],
+[{n:"Sol",o:3},{n:"Re",o:4},{n:"Fa",o:4,d:Q}],
+[{n:"Sol",o:3},{n:"Re",o:4},{n:"Fa",o:4,d:N}],
+[{n:"Fa",o:3},{n:"Do",o:4},{n:"Mi",o:4,d:Q}],
+[{n:"Fa",o:3},{n:"Do",o:4},{n:"Mi",o:4,d:Q}],
+[{n:"Fa",o:3},{n:"Do",o:4},{n:"Mi",o:4,d:Q}],
+[{n:"Fa",o:3},{n:"Do",o:4},{n:"Mi",o:4,d:N}],
+[{n:"Mi",o:3},{n:"Si",o:3},{n:"Sol",o:4,d:Q}],
+[{n:"Mi",o:3},{n:"Si",o:3},{n:"Sol",o:4,d:Q}],
+[{n:"Mi",o:3},{n:"Si",o:3},{n:"Sol",o:4,d:Q}],
+[{n:"Mi",o:3},{n:"Si",o:3},{n:"Sol",o:4,d:N}],
+[{n:"Re#",o:3},{n:"Sol#",o:3},{n:"Si",o:3,d:Q}],
+[{n:"Re#",o:3},{n:"Sol#",o:3},{n:"Si",o:3,d:Q}],
+[{n:"Re#",o:3},{n:"Sol#",o:3},{n:"Si",o:3,d:Q}],
+[{n:"Re#",o:3},{n:"Sol#",o:3},{n:"Si",o:3,d:N}],
+[{n:"Re#",o:3},{n:"La",o:3},{n:"Do",o:4,d:Q}],
+[{n:"Re#",o:3},{n:"La",o:3},{n:"Do",o:4,d:Q}],
+[{n:"Re#",o:3},{n:"La",o:3},{n:"Do",o:4,d:Q}],
+[{n:"Re#",o:3},{n:"La",o:3},{n:"Do",o:4,d:N}],
+[{n:"Re#",o:3},{n:"Sol#",o:3},{n:"Si",o:3,d:Q}],
+[{n:"Re#",o:3},{n:"Sol#",o:3},{n:"Si",o:3,d:Q}],
+[{n:"Sol#",o:3},{n:"Do",o:4},{n:"Mi",o:4,d:Q}],
+[{n:"Sol#",o:3},{n:"Do",o:4},{n:"Mi",o:4,d:N}],
+[{n:"La",o:3},{n:"Do",o:4},{n:"Mi",o:4,d:Q}],
+[{n:"La",o:3},{n:"Do",o:4},{n:"Mi",o:4,d:Q}],
+[{n:"La",o:3},{n:"Mi",o:4},{n:"Do",o:5,d:Q}],
+[{n:"La",o:3},{n:"Mi",o:4},{n:"Do",o:5,d:H+N}]
 ]},
-{name:"Querida Rosa",difficulty:"Intermedio",notes:[
-[{n:"Re",o:4,l:"Va-"}],[{n:"Mi",o:4,l:"-mos"}],[{n:"Fa#",o:4,l:"pa"}],[{n:"Sol",o:4,l:"a-"}],[{n:"Fa#",o:4,l:"-trás"}],
-[{n:"Mi",o:4,l:"Va-"}],[{n:"Re",o:4,l:"-mos"}],[{n:"Mi",o:4,l:"a"}],[{n:"Fa#",o:4,l:"con-"}],[{n:"Sol",o:4,l:"-tar"}],
-[{n:"La",o:4,l:"la"}],[{n:"Sol",o:4,l:"his-"}],[{n:"Fa#",o:4,l:"-to-"}],[{n:"Mi",o:4,l:"-ria"}],
-[{n:"Re",o:4,l:"de u-"}],[{n:"Mi",o:4,l:"-na"}],[{n:"Fa#",o:4,l:"ro-"}],[{n:"Re",o:4,l:"-sa"}],
-[{n:"Mi",o:4,l:"Ro-"}],[{n:"Fa#",o:4,l:"-jo"}],[{n:"Sol",o:4,l:"el"}],[{n:"La",o:4,l:"co-"}],[{n:"Si",o:4,l:"-lor"}],
-[{n:"La",o:4,l:"co-"}],[{n:"Sol",o:4,l:"-mo"}],[{n:"Fa#",o:4,l:"el"}],[{n:"Mi",o:4,l:"de mi"}],
-[{n:"Re",o:4,l:"co-"}],[{n:"La",o:3,l:"-ra-"}],[{n:"Si",o:3,l:"-zón"}],
-[{n:"Re",o:4,l:"Que-"}],[{n:"Re",o:4,l:"-ri-"}],[{n:"Mi",o:4,l:"-da"}],[{n:"Fa#",o:4,l:"ro-"}],[{n:"Sol",o:4,l:"-sa"}],
-[{n:"La",o:4,l:"te"}],[{n:"Si",o:4,l:"vi-"}],[{n:"La",o:4,l:"-ne"}],[{n:"Sol",o:4,l:"a"}],[{n:"Fa#",o:4,l:"re-"}],[{n:"Mi",o:4,l:"-gar"}],
-[{n:"Re",o:4,l:"con mis"}],[{n:"Fa#",o:4,l:"lá-"}],[{n:"La",o:4,l:"-gri-"}],[{n:"Re",o:5,l:"-mas"}],
-[{n:"Do#",o:5,l:"cuán-"}],[{n:"Si",o:4,l:"-to"}],[{n:"La",o:4,l:"me"}],[{n:"Sol",o:4,l:"hi-"}],[{n:"Fa#",o:4,l:"-cis-"}],[{n:"Mi",o:4,l:"-te"}],
-[{n:"Re",o:4,l:"llo-"}],[{n:"Mi",o:4,l:"-rar"}],
-[{n:"Fa#",o:4,l:"cuán-"}],[{n:"Sol",o:4,l:"-to"}],[{n:"La",o:4,l:"me"}],[{n:"Si",o:4,l:"que-"}],[{n:"La",o:4,l:"-rí-"}],[{n:"Sol",o:4,l:"-as"}],
-[{n:"Fa#",o:4,l:"Lle-"}],[{n:"Mi",o:4,l:"-gué"}],[{n:"Re",o:4,l:"tar-"}],[{n:"Mi",o:4,l:"-de"}],
-[{n:"Fa#",o:4,l:"es-"}],[{n:"Sol",o:4,l:"-ta-"}],[{n:"La",o:4,l:"-bas"}],[{n:"Sol",o:4,l:"mar-"}],[{n:"Fa#",o:4,l:"-chi-"}],[{n:"Mi",o:4,l:"-ta"}],
-[{n:"Re",o:4,l:"y me de-"}],[{n:"Fa#",o:4,l:"-jas-"}],[{n:"La",o:4,l:"-te"}],[{n:"Sol",o:4,l:"so-"}],[{n:"Fa#",o:4,l:"-li-"}],[{n:"Mi",o:4,l:"-ta"}],
-[{n:"Re",o:4,l:"Que-"}],[{n:"Re",o:4,l:"-ri-"}],[{n:"Mi",o:4,l:"-da"}],[{n:"Fa#",o:4,l:"ro-"}],[{n:"Re",o:4,l:"-sa"}]
+{name:"Querida Rosa",difficulty:"Intermedio",bpm:76,
+lyrics:[
+{w:"Va-",i:0},{w:"mos",i:1},{w:"pa",i:2},{w:"a-",i:3},{w:"trás",i:4},
+{w:"va-",i:5},{w:"mos",i:6},{w:"a",i:7},{w:"con-",i:8},{w:"tar",i:9},
+{w:"la",i:10},{w:"his-",i:11},{w:"to-",i:12},{w:"ria",i:13},
+{w:"de",i:14},{w:"u-",i:15},{w:"na",i:16},{w:"ro-",i:17},{w:"sa",i:18},
+{w:"Ro-",i:19},{w:"jo",i:20},{w:"el",i:21},{w:"co-",i:22},{w:"lor",i:23},
+{w:"co-",i:24},{w:"mo",i:25},{w:"el",i:26},{w:"de",i:27},
+{w:"mi",i:28},{w:"co-",i:29},{w:"ra-",i:30},{w:"zón",i:31},
+{w:"Que-",i:32},{w:"ri-",i:33},{w:"da",i:34},{w:"ro-",i:35},{w:"sa",i:36},
+{w:"te",i:37},{w:"vi-",i:38},{w:"ne",i:39},{w:"a",i:40},{w:"re-",i:41},{w:"gar",i:42},
+{w:"con",i:43},{w:"mis",i:44},{w:"lá-",i:45},{w:"gri-",i:46},{w:"mas",i:47},
+{w:"cuán-",i:48},{w:"to",i:49},{w:"me",i:50},{w:"hi-",i:51},{w:"cis-",i:52},{w:"te",i:53},
+{w:"llo-",i:54},{w:"rar",i:55},
+{w:"cuán-",i:56},{w:"to",i:57},{w:"me",i:58},{w:"que-",i:59},{w:"rí-",i:60},{w:"as",i:61},
+{w:"Lle-",i:62},{w:"gué",i:63},{w:"tar-",i:64},{w:"de",i:65},
+{w:"es-",i:66},{w:"ta-",i:67},{w:"bas",i:68},{w:"mar-",i:69},{w:"chi-",i:70},{w:"ta",i:71},
+{w:"y",i:72},{w:"me",i:73},{w:"de-",i:74},{w:"jas-",i:75},{w:"te",i:76},{w:"so-",i:77},{w:"li-",i:78},{w:"ta",i:79},
+{w:"Que-",i:80},{w:"ri-",i:81},{w:"da",i:82},{w:"ro-",i:83},{w:"sa",i:84}
+],
+notes:[
+[{n:"Re",o:4,d:N}],[{n:"Mi",o:4,d:H}],[{n:"Fa#",o:4,d:H}],[{n:"Sol",o:4,d:N}],[{n:"Fa#",o:4,d:N}],
+[{n:"Mi",o:4,d:N}],[{n:"Re",o:4,d:H}],[{n:"Mi",o:4,d:H}],[{n:"Fa#",o:4,d:N}],[{n:"Sol",o:4,d:N}],
+[{n:"La",o:4,d:H}],[{n:"Sol",o:4,d:H}],[{n:"Fa#",o:4,d:H}],[{n:"Mi",o:4,d:H}],
+[{n:"Re",o:4,d:H}],[{n:"Mi",o:4,d:H}],[{n:"Fa#",o:4,d:H}],[{n:"Re",o:4,d:H}],[{n:"Re",o:4,d:N}],
+[{n:"Mi",o:4,d:H}],[{n:"Fa#",o:4,d:H}],[{n:"Sol",o:4,d:H}],[{n:"La",o:4,d:H}],[{n:"Si",o:4,d:N}],
+[{n:"La",o:4,d:H}],[{n:"Sol",o:4,d:H}],[{n:"Fa#",o:4,d:H}],[{n:"Mi",o:4,d:H}],
+[{n:"Re",o:4,d:H}],[{n:"La",o:3,d:H}],[{n:"Si",o:3,d:H}],[{n:"Re",o:4,d:N+H}],
+[{n:"Re",o:4,d:H}],[{n:"Re",o:4,d:H}],[{n:"Mi",o:4,d:H}],[{n:"Fa#",o:4,d:H}],[{n:"Sol",o:4,d:N}],
+[{n:"La",o:4,d:H}],[{n:"Si",o:4,d:H}],[{n:"La",o:4,d:H}],[{n:"Sol",o:4,d:H}],[{n:"Fa#",o:4,d:H}],[{n:"Mi",o:4,d:N}],
+[{n:"Re",o:4,d:H}],[{n:"Fa#",o:4,d:H}],[{n:"La",o:4,d:H}],[{n:"Re",o:5,d:H}],[{n:"Re",o:5,d:N}],
+[{n:"Do#",o:5,d:H}],[{n:"Si",o:4,d:H}],[{n:"La",o:4,d:H}],[{n:"Sol",o:4,d:H}],[{n:"Fa#",o:4,d:H}],[{n:"Mi",o:4,d:H}],
+[{n:"Re",o:4,d:H}],[{n:"Mi",o:4,d:N+H}],
+[{n:"Fa#",o:4,d:H}],[{n:"Sol",o:4,d:H}],[{n:"La",o:4,d:H}],[{n:"Si",o:4,d:H}],[{n:"La",o:4,d:H}],[{n:"Sol",o:4,d:H}],
+[{n:"Fa#",o:4,d:H}],[{n:"Mi",o:4,d:H}],[{n:"Re",o:4,d:H}],[{n:"Mi",o:4,d:H}],
+[{n:"Fa#",o:4,d:H}],[{n:"Sol",o:4,d:H}],[{n:"La",o:4,d:H}],[{n:"Sol",o:4,d:H}],[{n:"Fa#",o:4,d:H}],[{n:"Mi",o:4,d:H}],
+[{n:"Re",o:4,d:H}],[{n:"Fa#",o:4,d:H}],[{n:"La",o:4,d:H}],[{n:"Sol",o:4,d:H}],[{n:"Fa#",o:4,d:H}],[{n:"Mi",o:4,d:H}],
+[{n:"Re",o:4,d:H}],[{n:"Re",o:4,d:H}],[{n:"Mi",o:4,d:H}],[{n:"Fa#",o:4,d:H}],[{n:"Re",o:4,d:N+H}]
 ]}
 ];
 
-function getFreq(noteName,octave){
-var base={"Do":261.63,"Re":293.66,"Mi":329.63,"Fa":349.23,"Sol":392.00,"La":440.00,"Si":493.88,"Do#":277.18,"Re#":311.13,"Fa#":369.99,"Sol#":415.30,"La#":466.16,"Do#":277.18}[noteName]||440;
-return base*Math.pow(2,octave-4);
+function getNoteDuration(chord,bpm,speedMult){
+var last=chord[chord.length-1];
+var beats=last.d!==undefined?last.d:1;
+var msPerBeat=60000/bpm;
+return Math.round((msPerBeat*beats)/speedMult);
+}
+
+function getFreq(n,o){
+var base={"Do":261.63,"Re":293.66,"Mi":329.63,"Fa":349.23,"Sol":392.00,"La":440.00,"Si":493.88,"Do#":277.18,"Re#":311.13,"Fa#":369.99,"Sol#":415.30,"La#":466.16}[n]||440;
+return base*Math.pow(2,o-4);
 }
 function getAudioCtx(){
 if(!audioCtx) audioCtx=new(window.AudioContext||window.webkitAudioContext)();
 return audioCtx;
 }
-function playChord(noteArr){
+function playChord(chord){
 try{
 var ctx=getAudioCtx();
-noteArr.forEach(function(nObj){
+chord.forEach(function(nObj){
 var freq=getFreq(nObj.n,nObj.o);
 var osc=ctx.createOscillator();
 var gain=ctx.createGain();
@@ -242,12 +280,14 @@ osc.connect(gain);gain.connect(ctx.destination);
 osc.type="triangle";
 osc.frequency.setValueAtTime(freq,ctx.currentTime);
 gain.gain.setValueAtTime(0.25,ctx.currentTime);
-gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.9);
-osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.9);
+gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.8);
+osc.start(ctx.currentTime);osc.stop(ctx.currentTime+0.8);
 });
 }catch(e){}
 }
-var currentSong=null,currentIdx=0,autoTimer=null,isPlaying=false,selectedSpeed=2000;
+
+var audioCtx=null,currentSong=null,currentIdx=0,autoTimer=null,isPlaying=false,speedMult=1;
+
 function init(){
 var sel=document.getElementById("songSelector");
 SONGS.forEach(function(s,i){
@@ -259,6 +299,7 @@ sel.appendChild(btn);
 });
 buildPiano();loadSong(0);
 }
+
 function buildPiano(){
 var container=document.getElementById("piano3oct");
 container.innerHTML="";
@@ -284,6 +325,7 @@ bLayer.appendChild(bs);
 });
 container.appendChild(bLayer);
 }
+
 function loadSong(idx){
 document.querySelectorAll(".song-btn").forEach(function(b,i){b.classList.toggle("active",i===idx);});
 currentSong=SONGS[idx];currentIdx=0;stopPlay();
@@ -292,15 +334,53 @@ document.getElementById("infoDiff").textContent=currentSong.difficulty;
 document.getElementById("finishedMsg").style.display="none";
 document.getElementById("btnPlay").textContent="▶ Iniciar";
 document.getElementById("btnPlay").className="btn-play";
+buildKaraoke();
 renderState();
 }
-function selectSpeed(ms){
-selectedSpeed=ms;
-[3000,2000,1200,700].forEach(function(s,i){
-document.getElementById("sp"+(i+1)).classList.toggle("active",ms===s);
+
+function buildKaraoke(){
+var box=document.getElementById("karaokeBox");
+box.innerHTML="";
+if(!currentSong.lyrics||currentSong.lyrics.length===0){
+box.style.display="none";return;
+}
+box.style.display="flex";
+currentSong.lyrics.forEach(function(item,i){
+var span=document.createElement("span");
+span.className="karaoke-word";
+span.id="kw_"+i;
+span.textContent=item.w;
+box.appendChild(span);
 });
+}
+
+function updateKaraoke(noteIdx){
+if(!currentSong.lyrics||currentSong.lyrics.length===0)return;
+document.querySelectorAll(".karaoke-word").forEach(function(el){el.className="karaoke-word";});
+var active=-1;
+currentSong.lyrics.forEach(function(item,i){
+if(item.i<=noteIdx) active=i;
+});
+currentSong.lyrics.forEach(function(item,i){
+var el=document.getElementById("kw_"+i);
+if(!el)return;
+if(i<active) el.className="karaoke-word done";
+else if(i===active) el.className="karaoke-word active";
+});
+if(active>=0){
+var el=document.getElementById("kw_"+active);
+if(el) el.scrollIntoView({behavior:"smooth",block:"nearest",inline:"center"});
+}
+}
+
+function selectSpeed(mult){
+speedMult=mult;
+document.querySelectorAll(".speed-btn").forEach(function(b){b.classList.remove("active");});
+var map={0.5:"sp1",0.75:"sp2",1:"sp3",1.5:"sp4"};
+if(map[mult]) document.getElementById(map[mult]).classList.add("active");
 if(isPlaying){stopPlay();startPlay();}
 }
+
 function togglePlay(){
 if(isPlaying){pausePlay();}
 else{if(currentIdx>=currentSong.notes.length-1)resetSong();startPlay();}
@@ -316,11 +396,12 @@ if(!isPlaying)return;
 renderState();
 playChord(currentSong.notes[currentIdx]);
 if(currentIdx>=currentSong.notes.length-1){finishSong();return;}
+var dur=getNoteDuration(currentSong.notes[currentIdx],currentSong.bpm,speedMult);
 autoTimer=setTimeout(function(){
 if(!isPlaying)return;
 currentIdx++;
 playCurrentAndSchedule();
-},selectedSpeed);
+},dur);
 }
 function pausePlay(){
 isPlaying=false;
@@ -343,6 +424,7 @@ stopPlay();currentIdx=0;
 document.getElementById("finishedMsg").style.display="none";
 document.getElementById("btnPlay").textContent="▶ Iniciar";
 document.getElementById("btnPlay").className="btn-play";
+buildKaraoke();
 renderState();
 }
 function nextNoteManual(){
@@ -356,12 +438,11 @@ function renderState(){
 if(!currentSong)return;
 var chord=currentSong.notes[currentIdx];
 var total=currentSong.notes.length;
-var noteLabels=chord.map(function(n){return n.n+n.o;}).join(" + ");
+var noteLabels=chord.map(function(n){return n.n+n.o;}).join("+");
 document.getElementById("infoNote").textContent=noteLabels;
 document.getElementById("infoProgress").textContent=(currentIdx+1)+" / "+total;
 document.getElementById("progressFill").style.width=Math.round((currentIdx+1)/total*100)+"%";
-var lyric=chord[0].l||"";
-document.getElementById("lyricBox").textContent=lyric;
+updateKaraoke(currentIdx);
 renderChordBox(chord);
 drawStaff(currentSong.notes,currentIdx);
 highlightPiano(chord);
@@ -414,7 +495,7 @@ bar.setAttribute("y1","18");bar.setAttribute("y2","70");
 bar.setAttribute("stroke","#bbb");bar.setAttribute("stroke-width","1.5");
 svg.appendChild(bar);
 var startX=115,spacing=44;
-var noteYmap={"Do5":18,"Si4":22,"La4":27,"Sol4":31,"Fa4":36,"Mi4":44,"Re4":51,"Do4":57,"Si3":61,"La3":66,"Sol3":70,"Fa3":75,"Mi3":80,"Re3":85,"Do3":90,"Fa#4":36,"Sol#4":31,"Re#5":22,"Do#5":18,"Fa#3":75,"Sol#3":70,"Re5":18,"Do#4":57,"Re#4":51,"La#4":27,"Fa#5":27,"Sol#5":22};
+var noteYmap={"Do5":18,"Si4":22,"La4":27,"Sol4":31,"Fa4":36,"Mi4":44,"Re4":51,"Do4":57,"Si3":61,"La3":66,"Sol3":70,"Fa3":75,"Mi3":80,"Re3":85,"Do3":90,"Fa#4":36,"Sol#4":31,"Re#5":22,"Do#5":18,"Fa#3":75,"Sol#3":70,"Re#4":51,"La#4":27,"Fa#5":27,"Sol#5":22,"Re5":22,"Do#4":57,"La#3":66};
 var start=Math.max(0,activeIdx-3);
 notes.forEach(function(chord,i){
 var visIdx=i-start;
@@ -429,8 +510,7 @@ r.setAttribute("rx","5");r.setAttribute("fill","#534AB7");r.setAttribute("opacit
 svg.appendChild(r);
 }
 var mainNote=chord[chord.length-1];
-var key=mainNote.n.replace("#","")+mainNote.o;
-var y=noteYmap[mainNote.n+mainNote.o]||noteYmap[key]||44;
+var y=noteYmap[mainNote.n+mainNote.o]||44;
 var e=document.createElementNS(ns,"ellipse");
 e.setAttribute("cx",x);e.setAttribute("cy",y);
 e.setAttribute("rx","9");e.setAttribute("ry","6.5");
